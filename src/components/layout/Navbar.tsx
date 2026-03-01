@@ -27,12 +27,12 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { key: 'nav.aboutUs', href: '/nosotros' },
-    { key: 'nav.experiences', href: '/#experiencias' },
-    { key: 'nav.seasons', href: '/#temporadas' },
-    { key: 'nav.pier24', href: '/#muelle24' },
-    { key: 'nav.blog', href: '/blog' },
-    { key: 'nav.contact', href: '/#contacto' },
+    { key: 'nav.aboutUs', href: '/nosotros', isRoute: true },
+    { key: 'nav.experiences', href: '/#experiencias', isRoute: false },
+    { key: 'nav.seasons', href: '/#temporadas', isRoute: false },
+    { key: 'nav.pier24', href: '/#muelle24', isRoute: false },
+    { key: 'nav.blog', href: '/blog', isRoute: false },
+    { key: 'nav.contact', href: '/#contacto', isRoute: false },
   ];
 
   const isHome = location.pathname === '/';
@@ -63,16 +63,27 @@ const Navbar: React.FC = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map(({ key, href }) => (
-            <a
-              key={key}
-              href={href}
-              className={`text-sm font-medium transition-colors hover:text-accent-orange ${isScrolled || !isHome ? 'text-foreground' : 'text-white/90'
-                }`}
-            >
-              {t(key)}
-            </a>
-          ))}
+          {navLinks.map(({ key, href, isRoute }) =>
+            isRoute ? (
+              <Link
+                key={key}
+                to={href}
+                className={`text-sm font-medium transition-colors hover:text-accent-orange ${isScrolled || !isHome ? 'text-foreground' : 'text-white/90'
+                  }`}
+              >
+                {t(key)}
+              </Link>
+            ) : (
+              <a
+                key={key}
+                href={href}
+                className={`text-sm font-medium transition-colors hover:text-accent-orange ${isScrolled || !isHome ? 'text-foreground' : 'text-white/90'
+                  }`}
+              >
+                {t(key)}
+              </a>
+            )
+          )}
         </nav>
 
         {/* Right controls */}
@@ -125,16 +136,27 @@ const Navbar: React.FC = () => {
             className="md:hidden bg-white border-t border-border shadow-lg"
           >
             <div className="container-bluelake py-4 flex flex-col gap-1">
-              {navLinks.map(({ key, href }) => (
-                <a
-                  key={key}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className="py-3 px-4 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
-                >
-                  {t(key)}
-                </a>
-              ))}
+              {navLinks.map(({ key, href, isRoute }) =>
+                isRoute ? (
+                  <Link
+                    key={key}
+                    to={href}
+                    onClick={() => setMobileOpen(false)}
+                    className="py-3 px-4 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                  >
+                    {t(key)}
+                  </Link>
+                ) : (
+                  <a
+                    key={key}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    className="py-3 px-4 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                  >
+                    {t(key)}
+                  </a>
+                )
+              )}
               <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border">
                 <Link to="/auth" className="w-full" onClick={() => setMobileOpen(false)}>
                   <Button variant="outline" className="w-full font-semibold rounded-full">
