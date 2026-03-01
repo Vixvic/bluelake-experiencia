@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   BLUELAKE — SISTEMA DE DISEÑO
+   Azul Amazónico | Naranja Sunset | Verde Selva
+   ============================================ */
+
+@layer base {
+  :root {
+    /* Colores base */
+    --background: 0 0% 100%;
+    --foreground: 210 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 30% 12%;
+
+    /* Azul Amazónico — dominante */
+    --primary: 204 73% 35%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 204 73% 48%;
+    --primary-dark: 204 73% 22%;
+    --primary-deep: 210 60% 12%;
+
+    /* Naranja Sunset — acento CTA */
+    --accent-orange: 18 100% 60%;
+    --accent-orange-hover: 18 100% 52%;
+    --accent-orange-foreground: 0 0% 100%;
+
+    /* Verde Selva — secundario */
+    --jungle: 142 45% 35%;
+    --jungle-light: 142 45% 48%;
+    --jungle-foreground: 0 0% 100%;
+
+    /* Secundarios */
+    --secondary: 204 20% 95%;
+    --secondary-foreground: 204 73% 35%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 15% 55%;
+
+    --accent: 204 20% 93%;
+    --accent-foreground: 204 73% 35%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 204 73% 35%;
+
+    --radius: 0.75rem;
+
+    /* Gradientes */
+    --gradient-hero: linear-gradient(135deg, hsl(204 73% 22% / 0.85), hsl(210 60% 12% / 0.92));
+    --gradient-primary: linear-gradient(135deg, hsl(204 73% 35%), hsl(204 73% 22%));
+    --gradient-premium: linear-gradient(135deg, hsl(210 60% 10%), hsl(204 73% 18%));
+    --gradient-card: linear-gradient(180deg, transparent 40%, hsl(210 60% 8% / 0.9) 100%);
+
+    /* Sombras */
+    --shadow-sm: 0 2px 8px hsl(204 73% 35% / 0.08);
+    --shadow-md: 0 4px 20px hsl(204 73% 35% / 0.12);
+    --shadow-lg: 0 8px 40px hsl(204 73% 35% / 0.18);
+    --shadow-orange: 0 4px 20px hsl(18 100% 60% / 0.3);
+
+    --sidebar-background: 210 60% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 18 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 204 73% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 204 40% 20%;
+    --sidebar-ring: 18 100% 60%;
+  }
+
+  .dark {
+    --background: 210 60% 8%;
+    --foreground: 0 0% 95%;
+    --card: 210 50% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 210 50% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 204 73% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 204 40% 15%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 210 30% 15%;
+    --muted-foreground: 210 15% 65%;
+    --accent: 204 40% 18%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 204 30% 18%;
+    --input: 204 30% 18%;
+    --ring: 204 73% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--primary)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-orange {
+    background: linear-gradient(135deg, hsl(var(--accent-orange)), hsl(18 100% 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-premium {
+    background: var(--gradient-premium);
+  }
+
+  .shadow-bluelake {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-orange {
+    box-shadow: var(--shadow-orange);
+  }
+
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .btn-orange {
+    background-color: hsl(var(--accent-orange));
+    color: hsl(var(--accent-orange-foreground));
+  }
+
+  .btn-orange:hover {
+    background-color: hsl(var(--accent-orange-hover));
+  }
+
+  .section-padding {
+    @apply py-16 px-4 md:py-24 md:px-8;
+  }
+
+  .container-bluelake {
+    @apply max-w-7xl mx-auto px-4 md:px-8;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 3px;
+  }
+}
