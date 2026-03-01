@@ -36,7 +36,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/bluelake-experiencia">
         <AuthProvider>
           <SeasonalProvider>
             <Routes>
