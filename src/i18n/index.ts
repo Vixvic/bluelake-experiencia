@@ -6,6 +6,7 @@ const resources = {
     translation: {
       // Navbar
       nav: {
+        aboutUs: 'Quiénes Somos',
         experiences: 'Experiencias',
         seasons: 'Temporadas',
         pier24: 'Muelle 24',
@@ -216,6 +217,7 @@ const resources = {
   en: {
     translation: {
       nav: {
+        aboutUs: 'Who We Are',
         experiences: 'Experiences',
         seasons: 'Seasons',
         pier24: 'Pier 24',

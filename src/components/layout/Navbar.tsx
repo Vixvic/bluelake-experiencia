@@ -27,6 +27,7 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
+    { key: 'nav.aboutUs', href: '/nosotros' },
     { key: 'nav.experiences', href: '/#experiencias' },
     { key: 'nav.seasons', href: '/#temporadas' },
     { key: 'nav.pier24', href: '/#muelle24' },

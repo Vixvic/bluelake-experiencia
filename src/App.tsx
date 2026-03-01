@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SeasonalProvider } from "@/contexts/SeasonalContext";
 import "@/i18n";
 import Index from "./pages/Index";
+import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 import TourDetailPage from "./pages/TourDetailPage";
 import AuthPage from "./pages/AuthPage";
@@ -41,6 +42,7 @@ const App = () => (
           <SeasonalProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/nosotros" element={<AboutPage />} />
               <Route path="/tours-iquitos/:slug" element={<TourDetailPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/admin" element={
