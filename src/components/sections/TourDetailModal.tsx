@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -235,6 +235,43 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                   </div>
                 </div>
               )}
+
+              {/* Información Práctica */}
+              <div className="pt-6 mt-6 border-t border-border space-y-4">
+                <h3 className="text-xl font-bold text-foreground">{i18n.language === 'es' ? 'Información Práctica' : 'Practical Info'}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="bg-secondary/40 p-4 rounded-xl border border-secondary/60">
+                    <h4 className="font-semibold text-primary flex items-center gap-2 mb-3 text-sm">
+                      <Sun className="w-4 h-4" /> {i18n.language === 'es' ? 'Recomendaciones' : 'Recommendations'}
+                    </h4>
+                    <ul className="text-xs text-muted-foreground space-y-2 relative pl-4 before:absolute before:left-1 before:top-1 before:w-[2px] before:h-[80%] before:bg-primary/20">
+                      <li>Bloqueador, repelente, lentes de sol, gorra</li>
+                      <li>Ropa ligera, traje de baño y toalla</li>
+                      <li>Dinero extra y cámara</li>
+                    </ul>
+                  </div>
+                  <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/10">
+                    <h4 className="font-semibold text-destructive flex items-center gap-2 mb-3 text-sm">
+                      <AlertCircle className="w-4 h-4" /> {i18n.language === 'es' ? 'Restricciones' : 'Restrictions'}
+                    </h4>
+                    <ul className="text-xs text-muted-foreground space-y-2 relative pl-4 before:absolute before:left-1 before:top-1 before:w-[2px] before:h-[80%] before:bg-destructive/20">
+                      <li>Cero consumo de alcohol ni drogas</li>
+                      <li>Actividades acuáticas desde 6 años (con adulto)</li>
+                      <li>No apto para personas con limitaciones físicas</li>
+                    </ul>
+                  </div>
+                  <div className="bg-muted p-4 rounded-xl border border-border">
+                    <h4 className="font-semibold text-foreground flex items-center gap-2 mb-3 text-sm">
+                      <FileText className="w-4 h-4" /> {i18n.language === 'es' ? 'Políticas' : 'Policies'}
+                    </h4>
+                    <ul className="text-xs text-muted-foreground space-y-2 relative pl-4 before:absolute before:left-1 before:top-1 before:w-[2px] before:h-[80%] before:bg-foreground/20">
+                      <li>Se reserva con el 100% de pago</li>
+                      <li>Reprogramaciones sujetas a disponibilidad climática</li>
+                      <li>Cancelación: +7 días 100% / 2-6 días 50% / &lt;24h 0% reembolso</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
 
               {isSoldOut && (
                 <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">

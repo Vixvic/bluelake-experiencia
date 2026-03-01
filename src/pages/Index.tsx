@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import HeroSection from '@/components/sections/HeroSection';
+import AboutSection from '@/components/sections/AboutSection';
 import SeasonsSection from '@/components/sections/SeasonsSection';
 import ExperiencesSection from '@/components/sections/ExperiencesSection';
 import Pier24Section from '@/components/sections/Pier24Section';
@@ -23,6 +24,7 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
+        <AboutSection />
         <SeasonsSection />
         <ExperiencesSection />
         <Pier24Section />

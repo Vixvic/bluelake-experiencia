@@ -26,7 +26,7 @@ interface Tour {
   images: string[];
 }
 
-const CATEGORY_ORDER = ['deportes-acuaticos', 'naturaleza', 'aventura', 'cultura', 'premium'];
+const CATEGORY_ORDER = ['full-days', 'actividades-acuaticas', 'balsas-turisticas', 'servicios-express', 'muelle-24'];
 
 const ExperiencesSection: React.FC = () => {
   const { t } = useTranslation();
