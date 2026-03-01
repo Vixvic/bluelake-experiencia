@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Globe, Waves } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import i18n from '@/i18n';
+import logo from '@/assets/logo-bluelake.png';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
@@ -49,7 +50,7 @@ const Navbar: React.FC = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
           <img
-            src="/logo-bluelake.png"
+            src={logo}
             alt="Bluelake Logo"
             className="h-9 w-auto"
           />

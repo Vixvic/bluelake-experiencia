@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Waves, MapPin, Phone, Mail, Instagram, Facebook, Youtube } from 'lucide-react';
+import logo from '@/assets/logo-bluelake.png';
 
 const Footer: React.FC = () => {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ const Footer: React.FC = () => {
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-4">
               <img
-                src="/logo-bluelake.png"
+                src={logo}
                 alt="Bluelake Logo"
                 className="h-9 w-auto"
               />

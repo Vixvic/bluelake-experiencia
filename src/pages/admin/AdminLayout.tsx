@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Waves, LayoutDashboard, Map, Calendar, Cloud, Building2, LogOut, Settings } from 'lucide-react';
+import logo from '@/assets/logo-bluelake.png';
 
 const AdminLayout: React.FC = () => {
   const { signOut } = useAuth();
@@ -28,7 +29,7 @@ const AdminLayout: React.FC = () => {
         <div className="p-5 border-b border-sidebar-border">
           <div className="flex items-center gap-2.5">
             <img
-              src="/logo-bluelake.png"
+              src={logo}
               alt="Bluelake Admin Logo"
               className="h-8 w-auto"
             />

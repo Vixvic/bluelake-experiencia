@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, CheckCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import logo from '@/assets/logo-bluelake.png';
 
 const AuthPage: React.FC = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -60,7 +61,7 @@ const AuthPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="mb-6 flex justify-center">
             <img
-              src="/logo-bluelake.png"
+              src={logo}
               alt="Bluelake Logo"
               className="h-16 w-auto object-contain"
             />
@@ -134,4 +135,3 @@ const AuthPage: React.FC = () => {
 };
 
 export default AuthPage;
-
