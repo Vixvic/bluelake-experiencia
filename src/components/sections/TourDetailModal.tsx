@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun } from 'lucide-react';
+import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun, ChevronDown } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -236,41 +236,45 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                 </div>
               )}
 
-              {/* Información Práctica */}
-              <div className="pt-6 mt-6 border-t border-border space-y-4">
+              {/* Información Práctica - Acordeón */}
+              <div className="pt-6 mt-6 border-t border-border space-y-3">
                 <h3 className="text-xl font-bold text-foreground">{i18n.language === 'es' ? 'Información Práctica' : 'Practical Info'}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-secondary/40 p-4 rounded-xl border border-secondary/60">
-                    <h4 className="font-semibold text-primary flex items-center gap-2 mb-3 text-sm">
-                      <Sun className="w-4 h-4" /> {i18n.language === 'es' ? 'Recomendaciones' : 'Recommendations'}
-                    </h4>
-                    <ul className="text-xs text-muted-foreground space-y-2 relative pl-4 before:absolute before:left-1 before:top-1 before:w-[2px] before:h-[80%] before:bg-primary/20">
-                      <li>Bloqueador, repelente, lentes de sol, gorra</li>
-                      <li>Ropa ligera, traje de baño y toalla</li>
-                      <li>Dinero extra y cámara</li>
-                    </ul>
-                  </div>
-                  <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/10">
-                    <h4 className="font-semibold text-destructive flex items-center gap-2 mb-3 text-sm">
-                      <AlertCircle className="w-4 h-4" /> {i18n.language === 'es' ? 'Restricciones' : 'Restrictions'}
-                    </h4>
-                    <ul className="text-xs text-muted-foreground space-y-2 relative pl-4 before:absolute before:left-1 before:top-1 before:w-[2px] before:h-[80%] before:bg-destructive/20">
-                      <li>Cero consumo de alcohol ni drogas</li>
-                      <li>Actividades acuáticas desde 6 años (con adulto)</li>
-                      <li>No apto para personas con limitaciones físicas</li>
-                    </ul>
-                  </div>
-                  <div className="bg-muted p-4 rounded-xl border border-border">
-                    <h4 className="font-semibold text-foreground flex items-center gap-2 mb-3 text-sm">
-                      <FileText className="w-4 h-4" /> {i18n.language === 'es' ? 'Políticas' : 'Policies'}
-                    </h4>
-                    <ul className="text-xs text-muted-foreground space-y-2 relative pl-4 before:absolute before:left-1 before:top-1 before:w-[2px] before:h-[80%] before:bg-foreground/20">
-                      <li>Se reserva con el 100% de pago</li>
-                      <li>Reprogramaciones sujetas a disponibilidad climática</li>
-                      <li>Cancelación: +7 días 100% / 2-6 días 50% / &lt;24h 0% reembolso</li>
-                    </ul>
-                  </div>
-                </div>
+                <InfoAccordion
+                  icon={<Sun className="w-4 h-4" />}
+                  title={i18n.language === 'es' ? 'Recomendaciones' : 'Recommendations'}
+                  colorClass="text-primary"
+                  bgClass="bg-secondary/40 border-secondary/60"
+                >
+                  <ul className="text-xs text-muted-foreground space-y-2 pl-4">
+                    <li>Bloqueador, repelente, lentes de sol, gorra</li>
+                    <li>Ropa ligera, traje de baño y toalla</li>
+                    <li>Dinero extra y cámara</li>
+                  </ul>
+                </InfoAccordion>
+                <InfoAccordion
+                  icon={<AlertCircle className="w-4 h-4" />}
+                  title={i18n.language === 'es' ? 'Restricciones' : 'Restrictions'}
+                  colorClass="text-destructive"
+                  bgClass="bg-destructive/5 border-destructive/10"
+                >
+                  <ul className="text-xs text-muted-foreground space-y-2 pl-4">
+                    <li>Cero consumo de alcohol ni drogas</li>
+                    <li>Actividades acuáticas desde 6 años (con adulto)</li>
+                    <li>No apto para personas con limitaciones físicas</li>
+                  </ul>
+                </InfoAccordion>
+                <InfoAccordion
+                  icon={<FileText className="w-4 h-4" />}
+                  title={i18n.language === 'es' ? 'Políticas' : 'Policies'}
+                  colorClass="text-foreground"
+                  bgClass="bg-muted border-border"
+                >
+                  <ul className="text-xs text-muted-foreground space-y-2 pl-4">
+                    <li>Se reserva con el 100% de pago</li>
+                    <li>Reprogramaciones sujetas a disponibilidad climática</li>
+                    <li>Cancelación: +7 días 100% / 2-6 días 50% / &lt;24h 0% reembolso</li>
+                  </ul>
+                </InfoAccordion>
               </div>
 
               {isSoldOut && (
@@ -457,6 +461,48 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
         </motion.div>
       </motion.div>
     </AnimatePresence>
+  );
+};
+
+// Collapsible accordion for practical info sections
+interface InfoAccordionProps {
+  icon: React.ReactNode;
+  title: string;
+  colorClass: string;
+  bgClass: string;
+  children: React.ReactNode;
+}
+
+const InfoAccordion: React.FC<InfoAccordionProps> = ({ icon, title, colorClass, bgClass, children }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-xl border overflow-hidden ${bgClass}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-4 cursor-pointer"
+      >
+        <span className={`font-semibold flex items-center gap-2 text-sm ${colorClass}`}>
+          {icon} {title}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
