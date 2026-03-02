@@ -86,6 +86,9 @@ const resources = {
           'balsas-turisticas': 'Balsas Turísticas',
           'servicios-express': 'Servicios Express',
           'muelle-24': 'Muelle 24',
+          'premium': 'Premium',
+          'naturaleza': 'Naturaleza',
+          'aventura': 'Aventura',
         },
       },
       // Muelle 24
@@ -293,6 +296,9 @@ const resources = {
           'balsas-turisticas': 'Floating Rafts',
           'servicios-express': 'Express Services',
           'muelle-24': 'Pier 24',
+          'premium': 'Premium',
+          'naturaleza': 'Nature',
+          'aventura': 'Adventure',
         },
       },
       pier24: {
