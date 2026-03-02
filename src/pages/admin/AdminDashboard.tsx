@@ -1,47 +1,329 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Calendar, DollarSign, Users, TrendingUp, TrendingDown, Search, SlidersHorizontal, FileDown, Plus, Droplets } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+interface Booking {
+  id: string;
+  customer_name: string;
+  customer_email: string;
+  adults: number;
+  children: number;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  tour_id: string;
+  tours?: { title_es: string };
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-700',
+  confirmed: 'bg-emerald-100 text-emerald-700',
+  cancelled: 'bg-red-100 text-red-600',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pendiente',
+  confirmed: 'Confirmado',
+  cancelled: 'Cancelado',
+};
+
+const AVATAR_COLORS = [
+  'bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500', 'bg-orange-500',
+];
+
+function getInitials(name: string) {
+  return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+}
+
+function getAvatarColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
 
 const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState({ total: 0, pending: 0, confirmed: 0, today: 0 });
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [stats, setStats] = useState({ todayCount: 0, monthRevenue: 0, occupationPct: 78 });
+  const [seasonMode, setSeasonMode] = useState('auto');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 3;
 
   useEffect(() => {
-    supabase.from('bookings').select('status, created_at').then(({ data }) => {
+    // Fetch recent bookings
+    supabase
+      .from('bookings')
+      .select('*, tours(title_es)')
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) setBookings(data as Booking[]);
+      });
+
+    // Fetch stats
+    supabase.from('bookings').select('status, created_at, total_amount').then(({ data }) => {
       if (!data) return;
       const today = new Date().toDateString();
+      const month = new Date().getMonth();
+      const year = new Date().getFullYear();
       setStats({
-        total: data.length,
-        pending: data.filter(b => b.status === 'pending').length,
-        confirmed: data.filter(b => b.status === 'confirmed').length,
-        today: data.filter(b => new Date(b.created_at).toDateString() === today).length,
+        todayCount: data.filter(b => new Date(b.created_at).toDateString() === today).length,
+        monthRevenue: data
+          .filter(b => {
+            const d = new Date(b.created_at);
+            return d.getMonth() === month && d.getFullYear() === year && b.status !== 'cancelled';
+          })
+          .reduce((sum, b) => sum + (b.total_amount || 0), 0),
+        occupationPct: 78,
       });
+    });
+
+    // Fetch season mode
+    supabase.from('seasonal_config').select('mode').limit(1).single().then(({ data }) => {
+      if (data?.mode) setSeasonMode(data.mode);
     });
   }, []);
 
-  const cards = [
-    { label: 'Reservas Totales', value: stats.total, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'Pendientes', value: stats.pending, icon: Clock, color: 'text-accent-orange', bg: 'bg-accent-orange/10' },
-    { label: 'Confirmadas', value: stats.confirmed, icon: CheckCircle2, color: 'text-jungle', bg: 'bg-jungle/10' },
-    { label: 'Hoy', value: stats.today, icon: Calendar, color: 'text-foreground', bg: 'bg-secondary' },
-  ];
+  const filteredBookings = bookings.filter(b =>
+    !searchQuery || b.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || b.customer_email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredBookings.length / perPage);
+  const paginatedBookings = filteredBookings.slice((currentPage - 1) * perPage, currentPage * perPage);
+  const showingFrom = filteredBookings.length === 0 ? 0 : (currentPage - 1) * perPage + 1;
+  const showingTo = Math.min(currentPage * perPage, filteredBookings.length);
+
+  const exportReport = () => {
+    const csv = [
+      ['Cliente', 'Email', 'Tour', 'Monto', 'Estado', 'Fecha'].join(','),
+      ...bookings.map(b => [
+        b.customer_name, b.customer_email, b.tours?.title_es || '', b.total_amount, b.status,
+        format(new Date(b.created_at), 'dd/MM/yyyy')
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte-bluelake-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+  };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-foreground mb-8">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        {cards.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-card rounded-2xl border border-border p-6 shadow-sm">
-            <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center mb-4`}>
-              <Icon className={`w-6 h-6 ${color}`} />
-            </div>
-            <div className="text-3xl font-bold text-foreground mb-1">{value}</div>
-            <div className="text-sm text-muted-foreground">{label}</div>
-          </div>
-        ))}
+    <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Resumen del Día</h1>
+          <p className="text-sm text-muted-foreground">Bienvenido de nuevo, administrador.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" className="gap-2" onClick={exportReport}>
+            <FileDown className="w-4 h-4" />
+            Exportar Reporte
+          </Button>
+          <Link to="/admin/bookings">
+            <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+              <Plus className="w-4 h-4" />
+              Nueva Reserva
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Reservas hoy */}
+        <div className="bg-card rounded-2xl border border-border p-6">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-muted-foreground font-medium">Reservas hoy</span>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-primary" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-foreground">{stats.todayCount}</span>
+            <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600">
+              <TrendingUp className="w-3 h-3" />+20%
+            </span>
+          </div>
+        </div>
+
+        {/* Ingresos del mes */}
+        <div className="bg-card rounded-2xl border border-border p-6">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-muted-foreground font-medium">Ingresos del mes</span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-emerald-600" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-foreground">S/ {stats.monthRevenue.toLocaleString()}</span>
+            <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600">
+              <TrendingUp className="w-3 h-3" />+15%
+            </span>
+          </div>
+        </div>
+
+        {/* Ocupación */}
+        <div className="bg-card rounded-2xl border border-border p-6">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-muted-foreground font-medium">Ocupación General</span>
+            <div className="w-10 h-10 rounded-xl bg-accent-orange/10 flex items-center justify-center">
+              <Users className="w-5 h-5 text-accent-orange" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-foreground">{stats.occupationPct}%</span>
+            <span className="flex items-center gap-0.5 text-xs font-medium text-red-500">
+              <TrendingDown className="w-3 h-3" />-5%
+            </span>
+          </div>
+          <div className="mt-3 w-full h-2 rounded-full bg-secondary overflow-hidden">
+            <div className="h-full rounded-full bg-accent-orange transition-all" style={{ width: `${stats.occupationPct}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Control de Estado del Río */}
       <div className="bg-card rounded-2xl border border-border p-6">
-        <h2 className="font-semibold text-foreground mb-2">Panel Bluelake</h2>
-        <p className="text-muted-foreground text-sm">Gestiona tours, reservas, temporadas y solicitudes corporativas desde el menú lateral.</p>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Droplets className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Control de Estado del Río (Lógica Estacional)</h3>
+              <p className="text-sm text-muted-foreground">Determina qué tours y vistas se muestran en la web pública.</p>
+            </div>
+          </div>
+          <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
+            Actual: {seasonMode === 'auto' ? 'Automático' : seasonMode === 'vaciante' ? 'Vaciante' : 'Creciente'}
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { value: 'auto', label: 'Automático', desc: 'Basado en fecha del servidor' },
+            { value: 'vaciante', label: 'Manual: Vaciante', desc: 'Temporada seca (Playas visibles)' },
+            { value: 'creciente', label: 'Manual: Creciente', desc: 'Temporada alta (Selva inundada)' },
+          ].map(opt => (
+            <button
+              key={opt.value}
+              onClick={async () => {
+                setSeasonMode(opt.value);
+                await supabase.from('seasonal_config').update({ mode: opt.value }).neq('id', '');
+              }}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${seasonMode === opt.value
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/30'
+                }`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-medium text-sm text-foreground">{opt.label}</span>
+                {seasonMode === opt.value && (
+                  <span className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground">{opt.desc}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom section: Últimas Reservas */}
+      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div className="p-6 pb-0">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Últimas Reservas</h3>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar cliente..."
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                  className="pl-9 h-9 w-52 text-sm"
+                />
+              </div>
+              <Button variant="outline" size="sm" className="gap-2 text-sm">
+                <SlidersHorizontal className="w-4 h-4" />
+                Filtros
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-y border-border bg-muted/30">
+              <tr>
+                {['CLIENTE', 'TOUR', 'FECHA', 'ESTADO'].map(h => (
+                  <th key={h} className="text-left px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {paginatedBookings.map(b => (
+                <tr key={b.id} className="hover:bg-muted/20 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full ${getAvatarColor(b.customer_name)} flex items-center justify-center shrink-0`}>
+                        <span className="text-white text-xs font-bold">{getInitials(b.customer_name)}</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground">{b.customer_name}</div>
+                        <div className="text-xs text-muted-foreground">{b.customer_email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-foreground">{b.tours?.title_es || 'Tour'}</div>
+                    <div className="text-xs text-muted-foreground">{b.adults + b.children} Personas</div>
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {format(new Date(b.created_at), 'dd MMM, yyyy', { locale: es })}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[b.status] || 'bg-secondary text-foreground'}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      {STATUS_LABELS[b.status] || b.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {paginatedBookings.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">No hay reservas recientes</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {filteredBookings.length > 0 && (
+          <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Mostrando {showingFrom} a {showingTo} de {filteredBookings.length} resultados
+            </span>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                Prev
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

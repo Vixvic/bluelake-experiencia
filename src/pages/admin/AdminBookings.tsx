@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, XCircle, Clock, Filter } from 'lucide-react';
+import { CheckCircle2, XCircle, Search, FileDown, Plus, Mail, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Booking {
   id: string;
@@ -23,110 +26,311 @@ interface Booking {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-accent-orange/10 text-accent-orange',
-  confirmed: 'bg-jungle/10 text-jungle',
-  cancelled: 'bg-destructive/10 text-destructive',
+  pending: 'bg-amber-100 text-amber-700',
+  confirmed: 'bg-emerald-100 text-emerald-700',
+  cancelled: 'bg-red-100 text-red-600',
 };
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pendiente',
+  confirmed: 'Confirmado',
+  cancelled: 'Cancelado',
+};
+
+const AVATAR_COLORS = [
+  'bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500', 'bg-orange-500',
+];
+
+function getInitials(name: string) {
+  return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+}
+
+function getAvatarColor(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getReservationId(index: number, total: number) {
+  return `#RES-${(total - index + 2800).toString().padStart(4, '0')}`;
+}
 
 const AdminBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [tours, setTours] = useState<{ id: string; title_es: string }[]>([]);
+
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [tourFilter, setTourFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 5;
 
   const fetchBookings = () => {
     setLoading(true);
-    let query = supabase.from('bookings').select('*, tours(title_es)').order('created_at', { ascending: false });
-    if (filter !== 'all') query = query.eq('status', filter);
-    query.then(({ data }) => {
-      setBookings(data || []);
-      setLoading(false);
-    });
+    supabase
+      .from('bookings')
+      .select('*, tours(title_es)')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setBookings((data || []) as Booking[]);
+        setLoading(false);
+      });
   };
 
-  useEffect(() => { fetchBookings(); }, [filter]);
+  useEffect(() => {
+    fetchBookings();
+    supabase.from('tours').select('id, title_es').then(({ data }) => {
+      if (data) setTours(data);
+    });
+  }, []);
+
+  // Apply filters
+  const filtered = bookings.filter(b => {
+    if (searchQuery && !b.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) && !b.customer_email.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (statusFilter !== 'all' && b.status !== statusFilter) return false;
+    if (tourFilter !== 'all' && b.tour_id !== tourFilter) return false;
+    if (dateFilter) {
+      const bookingDate = format(new Date(b.created_at), 'yyyy-MM-dd');
+      if (bookingDate !== dateFilter) return false;
+    }
+    return true;
+  });
+
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paginated = filtered.slice((currentPage - 1) * perPage, currentPage * perPage);
+  const showingFrom = filtered.length === 0 ? 0 : (currentPage - 1) * perPage + 1;
+  const showingTo = Math.min(currentPage * perPage, filtered.length);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, dateFilter, tourFilter, statusFilter]);
 
   const updateStatus = async (id: string, status: string) => {
     await supabase.from('bookings').update({ status }).eq('id', id);
     fetchBookings();
   };
 
+  const exportCSV = () => {
+    const csv = [
+      ['ID', 'Cliente', 'Email', 'Teléfono', 'Documento', 'Tour', 'Fechas', 'Adultos', 'Niños', 'Total', 'Método Pago', 'Modo Pago', 'Estado', 'Creado'].join(','),
+      ...filtered.map((b, i) => [
+        getReservationId(i, filtered.length),
+        `"${b.customer_name}"`, b.customer_email, b.customer_phone || '',
+        `${b.document_type || ''}:${b.document_number || ''}`,
+        `"${b.tours?.title_es || ''}"`,
+        `"${b.dates?.join('; ') || ''}"`,
+        b.adults, b.children, b.total_amount,
+        b.payment_method, b.payment_mode, b.status,
+        format(new Date(b.created_at), 'dd/MM/yyyy')
+      ].join(','))
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reservas-bluelake-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+  };
+
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Reservas</h1>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          {['all', 'pending', 'confirmed', 'cancelled'].map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${filter === s ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/70'}`}
-            >
-              {s === 'all' ? 'Todas' : s === 'pending' ? 'Pendientes' : s === 'confirmed' ? 'Confirmadas' : 'Canceladas'}
-            </button>
-          ))}
+    <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Gestión de Reservas</h1>
+          <p className="text-sm text-muted-foreground">Administra todas las reservas, pagos y estados de clientes.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" className="gap-2" onClick={exportCSV}>
+            <FileDown className="w-4 h-4" />
+            Exportar CSV
+          </Button>
+          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+            <Plus className="w-4 h-4" />
+            Nueva Reserva Manual
+          </Button>
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="bg-card rounded-2xl border border-border p-5">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Buscar Cliente</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Nombre o email..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-9 text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Rango de Fechas</label>
+            <Input
+              type="date"
+              value={dateFilter}
+              onChange={e => setDateFilter(e.target.value)}
+              className="text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Tipo de Tour</label>
+            <select
+              value={tourFilter}
+              onChange={e => setTourFilter(e.target.value)}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">Todos los Tours</option>
+              {tours.map(t => (
+                <option key={t.id} value={t.id}>{t.title_es}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Estado de Pago</label>
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="confirmed">Confirmado</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Cargando reservas...</div>
-      ) : bookings.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">No hay reservas</div>
       ) : (
-        <div className="rounded-2xl border border-border overflow-hidden bg-card">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-secondary/50 border-b border-border">
+              <thead className="border-b border-border bg-muted/30">
                 <tr>
-                  {['Cliente', 'Contacto', 'Experiencia', 'Fechas', 'Resumen', 'Estado', 'Acciones'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 font-semibold text-foreground text-xs uppercase tracking-wider">{h}</th>
+                  {['ID RESERVA', 'CLIENTE', 'TOUR & FECHA', 'PERSONAS', 'TOTAL', 'ESTADO', 'PAGO'].map(h => (
+                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {bookings.map((b) => (
-                  <tr key={b.id} className="hover:bg-secondary/20">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-foreground">{b.customer_name}</div>
-                      <div className="text-xs text-muted-foreground">{b.customer_email}</div>
+                {paginated.map((b, i) => (
+                  <tr key={b.id} className="hover:bg-muted/20 transition-colors">
+                    <td className="px-5 py-4 font-medium text-muted-foreground whitespace-nowrap text-xs">
+                      {getReservationId(i + (currentPage - 1) * perPage, filtered.length)}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-foreground">{b.document_type || 'Doc'}: {b.document_number || 'N/A'}</div>
-                      <div className="text-xs text-muted-foreground">Telf: {b.customer_phone || 'N/A'}</div>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-full ${getAvatarColor(b.customer_name)} flex items-center justify-center shrink-0`}>
+                          <span className="text-white text-xs font-bold">{getInitials(b.customer_name)}</span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-foreground">{b.customer_name}</div>
+                          <div className="text-xs text-muted-foreground">{b.customer_email}</div>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-foreground">
-                      {b.tours?.title_es || 'Tour'}
+                    <td className="px-5 py-4">
+                      <div className="font-medium text-foreground">{b.tours?.title_es || 'Tour'}</div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        📅 {format(new Date(b.created_at), 'dd MMM, yyyy', { locale: es })}
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs whitespace-pre-wrap max-w-[150px]">
-                      {b.dates?.join(', ')}
+                    <td className="px-5 py-4 text-foreground">
+                      {b.adults + b.children} {b.adults + b.children === 1 ? 'Adulto' : 'Personas'}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="font-semibold text-primary">${b.total_amount}</div>
-                      <div className="text-xs text-muted-foreground">{b.adults}A {b.children}N</div>
-                      <div className="text-xs text-muted-foreground">{b.payment_method} / {b.payment_mode}</div>
+                    <td className="px-5 py-4 font-semibold text-foreground whitespace-nowrap">
+                      S/ {b.total_amount.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[b.status] || 'bg-secondary text-foreground'}`}>
-                        {b.status}
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[b.status] || 'bg-secondary text-foreground'}`}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                        {STATUS_LABELS[b.status] || b.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      {b.status === 'pending' && (
-                        <div className="flex gap-2">
-                          <button onClick={() => updateStatus(b.id, 'confirmed')} className="p-1.5 rounded-lg bg-jungle/10 hover:bg-jungle/20 text-jungle transition-colors">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => updateStatus(b.id, 'cancelled')} className="p-1.5 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive transition-colors">
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5">
+                        {b.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => updateStatus(b.id, 'confirmed')}
+                              className="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-700 transition-colors"
+                              title="Confirmar"
+                            >
+                              <CheckCircle2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => updateStatus(b.id, 'cancelled')}
+                              className="p-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-600 transition-colors"
+                              title="Cancelar"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                        <button className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors" title="Enviar email">
+                          <Mail className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => updateStatus(b.id, 'cancelled')}
+                          className="p-1.5 rounded-lg bg-secondary hover:bg-secondary/70 text-muted-foreground transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
+                {paginated.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
+                      No se encontraron reservas con los filtros seleccionados
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {filtered.length > 0 && (
+            <div className="px-5 py-4 border-t border-border flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                Mostrando {showingFrom} a {showingTo} de <strong>{filtered.length}</strong> resultados
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="gap-1"
+                >
+                  ‹ Prev
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="gap-1"
+                >
+                  Next ›
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
