@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Star, Users } from 'lucide-react';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Tour {
   id: string;
@@ -32,6 +33,7 @@ const TourCard: React.FC<TourCardProps> = ({ tour, index, onClick }) => {
   const { t, i18n } = useTranslation();
   const title = i18n.language === 'es' ? tour.title_es : tour.title_en;
   const isSoldOut = tour.current_bookings >= tour.max_capacity;
+  const { formatPrice } = useCurrency();
 
   return (
     <motion.button
@@ -79,7 +81,7 @@ const TourCard: React.FC<TourCardProps> = ({ tour, index, onClick }) => {
               <span className="text-xs font-medium text-muted-foreground">Cotizar</span>
             ) : (
               <div className="flex items-baseline gap-1">
-                <span className="text-xl font-extrabold text-primary">${tour.base_price}</span>
+                <span className="text-xl font-extrabold text-primary">{formatPrice(tour.base_price)}</span>
                 <span className="text-[10px] text-muted-foreground font-medium">/{t('experiences.perPerson')}</span>
               </div>
             )}

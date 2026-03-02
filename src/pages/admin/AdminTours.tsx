@@ -299,7 +299,7 @@ const AdminTours: React.FC = () => {
                         'bg-jungle/10 text-jungle'
                       }`}>{tour.season}</span>
                   </td>
-                  <td className="px-4 py-3 font-semibold text-primary">${tour.base_price}</td>
+                  <td className="px-4 py-3 font-semibold text-primary">S/ {tour.base_price}</td>
                   <td className="px-4 py-3 text-foreground">{tour.current_bookings}/{tour.max_capacity}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${tour.visible ? 'bg-jungle/10 text-jungle' : 'bg-secondary text-muted-foreground'}`}>
@@ -475,7 +475,7 @@ const AdminTours: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-semibold mb-1 block">Precio Base ($)</label>
+                  <label className="text-sm font-semibold mb-1 block">Precio Base (S/)</label>
                   <Input type="number" min="0" step="0.01" value={editingTour.base_price} onChange={e => setEditingTour({ ...editingTour, base_price: parseFloat(e.target.value) })} required />
                 </div>
                 <div>

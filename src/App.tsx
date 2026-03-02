@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SeasonalProvider } from "@/contexts/SeasonalContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import "@/i18n";
 import Index from "./pages/Index";
 import AboutPage from "./pages/AboutPage";
@@ -39,27 +40,29 @@ const App = () => (
       <Sonner />
       <BrowserRouter basename="/bluelake-experiencia">
         <AuthProvider>
-          <SeasonalProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/nosotros" element={<AboutPage />} />
-              <Route path="/tours-iquitos/:slug" element={<TourDetailPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/admin" element={
-                <ProtectedAdmin>
-                  <AdminLayout />
-                </ProtectedAdmin>
-              }>
-                <Route index element={<AdminDashboard />} />
-                <Route path="tours" element={<AdminTours />} />
-                <Route path="bookings" element={<AdminBookings />} />
-                <Route path="seasons" element={<AdminSeasons />} />
-                <Route path="corporate" element={<AdminCorporate />} />
-                <Route path="settings" element={<AdminSettings />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </SeasonalProvider>
+          <CurrencyProvider>
+            <SeasonalProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/nosotros" element={<AboutPage />} />
+                <Route path="/tours-iquitos/:slug" element={<TourDetailPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/admin" element={
+                  <ProtectedAdmin>
+                    <AdminLayout />
+                  </ProtectedAdmin>
+                }>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="tours" element={<AdminTours />} />
+                  <Route path="bookings" element={<AdminBookings />} />
+                  <Route path="seasons" element={<AdminSeasons />} />
+                  <Route path="corporate" element={<AdminCorporate />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SeasonalProvider>
+          </CurrencyProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

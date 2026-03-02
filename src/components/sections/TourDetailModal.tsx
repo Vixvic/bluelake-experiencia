@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -57,6 +58,7 @@ const CARD_FEE = 0.06;
 
 const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
   const { t, i18n } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -189,7 +191,7 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                   <div>
                     <span className="text-xs text-muted-foreground">{t('experiences.from')}</span>
                     <div className="text-2xl font-bold text-primary">
-                      ${tour.base_price}
+                      {formatPrice(tour.base_price)}
                       <span className="text-xs font-normal text-muted-foreground ml-1">/{t('experiences.perPerson')}</span>
                     </div>
                   </div>
@@ -401,22 +403,22 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                   <div className="rounded-xl bg-secondary/50 p-3 space-y-1.5 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('booking.subtotal')}</span>
-                      <span className="font-medium">${subtotal.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(subtotal)}</span>
                     </div>
                     {cardFee > 0 && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t('booking.cardFee')}</span>
-                        <span className="font-medium text-destructive">+${cardFee.toFixed(2)}</span>
+                        <span className="font-medium text-destructive">+{formatPrice(cardFee)}</span>
                       </div>
                     )}
                     <div className="border-t border-border pt-1.5 flex justify-between">
                       <span className="font-semibold">{t('booking.total')}</span>
-                      <span className="font-bold text-primary">${total.toFixed(2)}</span>
+                      <span className="font-bold text-primary">{formatPrice(total)}</span>
                     </div>
                     {paymentMode === 'partial' && (
                       <div className="bg-accent-orange/10 rounded-lg p-2 flex justify-between">
                         <span className="text-xs font-semibold text-accent-orange">{t('booking.toPay')}</span>
-                        <span className="font-bold text-accent-orange">${toPay.toFixed(2)}</span>
+                        <span className="font-bold text-accent-orange">{formatPrice(toPay)}</span>
                       </div>
                     )}
                   </div>

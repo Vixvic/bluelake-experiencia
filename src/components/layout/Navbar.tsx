@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Globe, Waves } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import i18n from '@/i18n';
 import logo from '@/assets/logo-bluelake.png';
 
@@ -13,6 +14,7 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState(i18n.language);
+  const { currency, toggleCurrency } = useCurrency();
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 60);
@@ -96,6 +98,15 @@ const Navbar: React.FC = () => {
           >
             <Globe className="w-3.5 h-3.5" />
             {lang.toUpperCase()}
+          </button>
+          <button
+            onClick={toggleCurrency}
+            className={`text-sm font-bold px-3 py-1.5 rounded-full border transition-all ${isScrolled || !isHome
+              ? 'border-border text-foreground hover:border-primary hover:text-primary'
+              : 'border-white/30 text-white hover:border-white'
+              }`}
+          >
+            {currency === 'PEN' ? 'S/' : '$'}
           </button>
           <Link to="/auth">
             <Button

@@ -17,6 +17,7 @@ import { CalendarIcon, Users, ChevronLeft, Star, CheckCircle2, Loader2, X } from
 import { cn } from '@/lib/utils';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Tour {
   id: string;
@@ -55,6 +56,7 @@ const CARD_FEE = 0.06;
 const TourDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { t, i18n } = useTranslation();
+  const { formatPrice, currency } = useCurrency();
   const [tour, setTour] = useState<Tour | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
@@ -212,7 +214,7 @@ const TourDetailPage: React.FC = () => {
                   {!tour.requires_quote && (
                     <div className="text-right shrink-0">
                       <span className="text-xs text-muted-foreground block">{t('experiences.from')}</span>
-                      <span className="text-3xl font-bold text-primary">${tour.base_price}</span>
+                      <span className="text-3xl font-bold text-primary">{formatPrice(tour.base_price)}</span>
                       <span className="text-sm text-muted-foreground block">/{t('experiences.perPerson')}</span>
                     </div>
                   )}
@@ -314,7 +316,7 @@ const TourDetailPage: React.FC = () => {
                             <label className="text-sm font-medium text-foreground mb-1.5 block">{t('booking.children')}</label>
                             <Input type="number" min={0} max={20} {...register('children')} />
                             {tour.child_price ? (
-                              <span className="text-xs text-muted-foreground">${tour.child_price}/niño</span>
+                              <span className="text-xs text-muted-foreground">{formatPrice(tour.child_price)}/niño</span>
                             ) : (
                               <span className="text-xs text-jungle">Gratis para niños</span>
                             )}
@@ -366,22 +368,22 @@ const TourDetailPage: React.FC = () => {
                           <h4 className="text-sm font-semibold text-foreground mb-3">{t('booking.summary')}</h4>
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">{t('booking.subtotal')}</span>
-                            <span className="font-medium">${subtotal.toFixed(2)}</span>
+                            <span className="font-medium">{formatPrice(subtotal)}</span>
                           </div>
                           {cardFee > 0 && (
                             <div className="flex justify-between text-sm">
                               <span className="text-muted-foreground">{t('booking.cardFee')}</span>
-                              <span className="font-medium text-destructive">+${cardFee.toFixed(2)}</span>
+                              <span className="font-medium text-destructive">+{formatPrice(cardFee)}</span>
                             </div>
                           )}
                           <div className="border-t border-border pt-2 flex justify-between">
                             <span className="font-semibold text-foreground">{t('booking.total')}</span>
-                            <span className="font-bold text-primary text-lg">${total.toFixed(2)}</span>
+                            <span className="font-bold text-primary text-lg">{formatPrice(total)}</span>
                           </div>
                           {paymentMode === 'partial' && (
                             <div className="bg-accent-orange/10 rounded-lg p-2 flex justify-between">
                               <span className="text-sm font-semibold text-accent-orange">{t('booking.toPay')}</span>
-                              <span className="font-bold text-accent-orange">${toPay.toFixed(2)}</span>
+                              <span className="font-bold text-accent-orange">{formatPrice(toPay)}</span>
                             </div>
                           )}
                         </div>
