@@ -30,7 +30,6 @@ const Navbar: React.FC = () => {
     { key: 'nav.aboutUs', href: '/nosotros', isRoute: true },
     { key: 'nav.experiences', href: '/#experiencias', isRoute: false },
     { key: 'nav.seasons', href: '/#temporadas', isRoute: false },
-    { key: 'nav.pier24', href: '/#muelle24', isRoute: false },
     { key: 'nav.blog', href: '/blog', isRoute: false },
     { key: 'nav.contact', href: '/#contacto', isRoute: false },
   ];
