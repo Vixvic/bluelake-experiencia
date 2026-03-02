@@ -40,55 +40,54 @@ const TourCard: React.FC<TourCardProps> = ({ tour, index, onClick }) => {
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       onClick={onClick}
-      className="group relative flex-shrink-0 w-[260px] md:w-[300px] rounded-2xl overflow-hidden bg-card border border-border shadow-bluelake text-left transition-all duration-300 hover:scale-105 hover:shadow-lg hover:z-10 focus:outline-none focus:ring-2 focus:ring-primary"
+      className="group relative flex-shrink-0 w-[260px] md:w-[300px] rounded-2xl overflow-hidden bg-card border border-border shadow-bluelake text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:z-10 focus:outline-none focus:ring-2 focus:ring-primary"
     >
       {/* Image */}
-      <div className="relative h-[170px] overflow-hidden">
+      <div className="relative h-[190px] overflow-hidden">
         <img
           src={tour.image_url || 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600'}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-card" />
+        {/* Subtle gradient only for badge readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
 
         {/* Badges */}
         <div className="absolute top-2.5 left-2.5 flex gap-1.5">
           {tour.premium && (
-            <span className="bg-accent-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span className="bg-accent-orange text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
               <Star className="w-3 h-3 fill-current" />
               {t('experiences.premium')}
             </span>
           )}
           {isSoldOut && (
-            <span className="bg-destructive text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-destructive text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
               {t('experiences.soldOut')}
             </span>
           )}
         </div>
-
-        {/* Title overlay at bottom of image */}
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <h3 className="font-bold text-white text-sm leading-snug line-clamp-2 drop-shadow-lg">
-            {title}
-          </h3>
-        </div>
       </div>
 
-      {/* Footer info */}
-      <div className="p-3 flex items-center justify-between">
-        <div>
-          {tour.requires_quote ? (
-            <span className="text-xs font-medium text-muted-foreground">Cotizar</span>
-          ) : (
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg font-bold text-primary">${tour.base_price}</span>
-              <span className="text-[10px] text-muted-foreground">/{t('experiences.perPerson')}</span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Users className="w-3 h-3" />
-          <span>{tour.max_capacity - tour.current_bookings}</span>
+      {/* Content below image */}
+      <div className="p-4 space-y-2">
+        <h3 className="font-bold text-foreground text-[15px] leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          {title}
+        </h3>
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            {tour.requires_quote ? (
+              <span className="text-xs font-medium text-muted-foreground">Cotizar</span>
+            ) : (
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl font-extrabold text-primary">${tour.base_price}</span>
+                <span className="text-[10px] text-muted-foreground font-medium">/{t('experiences.perPerson')}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/60 px-2 py-1 rounded-full">
+            <Users className="w-3.5 h-3.5" />
+            <span>{tour.max_capacity - tour.current_bookings}</span>
+          </div>
         </div>
       </div>
     </motion.button>
