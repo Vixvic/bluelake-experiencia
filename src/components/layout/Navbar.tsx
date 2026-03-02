@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Globe, Waves } from 'lucide-react';
@@ -12,6 +12,7 @@ const Navbar: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState(i18n.language);
   const { currency, toggleCurrency } = useCurrency();
@@ -30,13 +31,27 @@ const Navbar: React.FC = () => {
 
   const navLinks = [
     { key: 'nav.aboutUs', href: '/nosotros', isRoute: true },
-    { key: 'nav.experiences', href: '/#experiencias', isRoute: false },
-    { key: 'nav.seasons', href: '/#temporadas', isRoute: false },
-    { key: 'nav.blog', href: '/blog', isRoute: false },
-    { key: 'nav.contact', href: '/#contacto', isRoute: false },
+    { key: 'nav.experiences', href: '#experiencias', isRoute: false },
+    { key: 'nav.seasons', href: '#temporadas', isRoute: false },
+    { key: 'nav.blog', href: '/blog', isRoute: true },
+    { key: 'nav.contact', href: '#contacto', isRoute: false },
   ];
 
-  const isHome = location.pathname === '/';
+  const isHome = location.pathname === '/' || location.pathname === '';
+
+  const handleHashClick = (hash: string) => {
+    const id = hash.replace('#', '');
+    if (isHome) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    }
+  };
 
   return (
     <motion.header
@@ -75,14 +90,14 @@ const Navbar: React.FC = () => {
                 {t(key)}
               </Link>
             ) : (
-              <a
+              <button
                 key={key}
-                href={href}
+                onClick={() => handleHashClick(href)}
                 className={`text-sm font-medium transition-colors hover:text-accent-orange ${isScrolled || !isHome ? 'text-foreground' : 'text-white/90'
                   }`}
               >
                 {t(key)}
-              </a>
+              </button>
             )
           )}
         </nav>
@@ -157,14 +172,13 @@ const Navbar: React.FC = () => {
                     {t(key)}
                   </Link>
                 ) : (
-                  <a
+                  <button
                     key={key}
-                    href={href}
-                    onClick={() => setMobileOpen(false)}
-                    className="py-3 px-4 text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                    onClick={() => { setMobileOpen(false); handleHashClick(href); }}
+                    className="py-3 px-4 text-left text-sm font-medium text-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors"
                   >
                     {t(key)}
-                  </a>
+                  </button>
                 )
               )}
               <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border">
@@ -181,11 +195,11 @@ const Navbar: React.FC = () => {
                     <Globe className="w-3.5 h-3.5" />
                     {lang.toUpperCase()}
                   </button>
-                  <Link to="/#contacto" className="flex-1" onClick={() => setMobileOpen(false)}>
+                  <button onClick={() => { setMobileOpen(false); handleHashClick('#contacto'); }} className="flex-1">
                     <Button className="w-full bg-accent-orange hover:bg-accent-orange-hover text-white font-semibold rounded-full">
                       {t('nav.bookNow')}
                     </Button>
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
