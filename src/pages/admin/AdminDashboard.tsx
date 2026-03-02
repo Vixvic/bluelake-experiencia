@@ -96,12 +96,32 @@ const AdminDashboard: React.FC = () => {
       setStats(prev => ({ ...prev, todayCount, yesterdayCount, monthRevenue, lastMonthRevenue }));
     });
 
-    // Fetch occupation from tours
-    supabase.from('tours').select('current_bookings, max_capacity').eq('visible', true).then(({ data }) => {
-      if (!data || data.length === 0) return;
-      const totalBookings = data.reduce((s, t) => s + (t.current_bookings || 0), 0);
-      const totalCapacity = data.reduce((s, t) => s + (t.max_capacity || 1), 0);
-      const pct = totalCapacity > 0 ? Math.round((totalBookings / totalCapacity) * 100) : 0;
+    // Fetch occupation: count active bookings vs total capacity
+    Promise.all([
+      supabase.from('tours').select('id, max_capacity, current_bookings'),
+      supabase.from('bookings').select('tour_id, status').in('status', ['pending', 'confirmed']),
+    ]).then(([toursRes, bookingsRes]) => {
+      const toursData = toursRes.data;
+      const bookingsData = bookingsRes.data;
+      if (!toursData || toursData.length === 0) return;
+
+      const totalCapacity = toursData.reduce((s, t) => s + (t.max_capacity || 1), 0);
+
+      // Prefer counting real bookings over current_bookings field
+      let totalBooked = 0;
+      if (bookingsData && bookingsData.length > 0) {
+        // Count bookings per tour
+        const bookingCounts: Record<string, number> = {};
+        bookingsData.forEach(b => {
+          bookingCounts[b.tour_id] = (bookingCounts[b.tour_id] || 0) + 1;
+        });
+        totalBooked = Object.values(bookingCounts).reduce((s, c) => s + c, 0);
+      } else {
+        // Fallback to current_bookings field
+        totalBooked = toursData.reduce((s, t) => s + (t.current_bookings || 0), 0);
+      }
+
+      const pct = totalCapacity > 0 ? Math.round((totalBooked / totalCapacity) * 100) : 0;
       setStats(prev => ({ ...prev, occupationPct: pct }));
     });
 
