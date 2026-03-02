@@ -48,7 +48,7 @@ function getAvatarColor(name: string) {
 
 const AdminDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [stats, setStats] = useState({ todayCount: 0, monthRevenue: 0, occupationPct: 78 });
+  const [stats, setStats] = useState({ todayCount: 0, yesterdayCount: 0, monthRevenue: 0, lastMonthRevenue: 0, occupationPct: 0 });
   const [seasonMode, setSeasonMode] = useState('auto');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,19 +68,41 @@ const AdminDashboard: React.FC = () => {
     // Fetch stats
     supabase.from('bookings').select('status, created_at, total_amount').then(({ data }) => {
       if (!data) return;
-      const today = new Date().toDateString();
-      const month = new Date().getMonth();
-      const year = new Date().getFullYear();
-      setStats({
-        todayCount: data.filter(b => new Date(b.created_at).toDateString() === today).length,
-        monthRevenue: data
-          .filter(b => {
-            const d = new Date(b.created_at);
-            return d.getMonth() === month && d.getFullYear() === year && b.status !== 'cancelled';
-          })
-          .reduce((sum, b) => sum + (b.total_amount || 0), 0),
-        occupationPct: 78,
-      });
+      const now = new Date();
+      const today = now.toDateString();
+      const yesterday = new Date(now.getTime() - 86400000).toDateString();
+      const month = now.getMonth();
+      const year = now.getFullYear();
+      const lastMonth = month === 0 ? 11 : month - 1;
+      const lastMonthYear = month === 0 ? year - 1 : year;
+
+      const todayCount = data.filter(b => new Date(b.created_at).toDateString() === today).length;
+      const yesterdayCount = data.filter(b => new Date(b.created_at).toDateString() === yesterday).length;
+
+      const monthRevenue = data
+        .filter(b => {
+          const d = new Date(b.created_at);
+          return d.getMonth() === month && d.getFullYear() === year && b.status !== 'cancelled';
+        })
+        .reduce((sum, b) => sum + (b.total_amount || 0), 0);
+
+      const lastMonthRevenue = data
+        .filter(b => {
+          const d = new Date(b.created_at);
+          return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear && b.status !== 'cancelled';
+        })
+        .reduce((sum, b) => sum + (b.total_amount || 0), 0);
+
+      setStats(prev => ({ ...prev, todayCount, yesterdayCount, monthRevenue, lastMonthRevenue }));
+    });
+
+    // Fetch occupation from tours
+    supabase.from('tours').select('current_bookings, max_capacity').eq('visible', true).then(({ data }) => {
+      if (!data || data.length === 0) return;
+      const totalBookings = data.reduce((s, t) => s + (t.current_bookings || 0), 0);
+      const totalCapacity = data.reduce((s, t) => s + (t.max_capacity || 1), 0);
+      const pct = totalCapacity > 0 ? Math.round((totalBookings / totalCapacity) * 100) : 0;
+      setStats(prev => ({ ...prev, occupationPct: pct }));
     });
 
     // Fetch season mode
@@ -148,9 +170,14 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-foreground">{stats.todayCount}</span>
-            <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600">
-              <TrendingUp className="w-3 h-3" />+20%
-            </span>
+            {stats.yesterdayCount > 0 ? (
+              <span className={`flex items-center gap-0.5 text-xs font-medium ${stats.todayCount >= stats.yesterdayCount ? 'text-emerald-600' : 'text-red-500'}`}>
+                {stats.todayCount >= stats.yesterdayCount ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {stats.yesterdayCount > 0 ? `${Math.round(((stats.todayCount - stats.yesterdayCount) / stats.yesterdayCount) * 100)}%` : 'nuevo'}
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">vs ayer</span>
+            )}
           </div>
         </div>
 
@@ -164,9 +191,14 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-foreground">S/ {stats.monthRevenue.toLocaleString()}</span>
-            <span className="flex items-center gap-0.5 text-xs font-medium text-emerald-600">
-              <TrendingUp className="w-3 h-3" />+15%
-            </span>
+            {stats.lastMonthRevenue > 0 ? (
+              <span className={`flex items-center gap-0.5 text-xs font-medium ${stats.monthRevenue >= stats.lastMonthRevenue ? 'text-emerald-600' : 'text-red-500'}`}>
+                {stats.monthRevenue >= stats.lastMonthRevenue ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {Math.round(((stats.monthRevenue - stats.lastMonthRevenue) / stats.lastMonthRevenue) * 100)}%
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">mes actual</span>
+            )}
           </div>
         </div>
 
@@ -180,9 +212,7 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-foreground">{stats.occupationPct}%</span>
-            <span className="flex items-center gap-0.5 text-xs font-medium text-red-500">
-              <TrendingDown className="w-3 h-3" />-5%
-            </span>
+            <span className="text-xs text-muted-foreground">capacidad total</span>
           </div>
           <div className="mt-3 w-full h-2 rounded-full bg-secondary overflow-hidden">
             <div className="h-full rounded-full bg-accent-orange transition-all" style={{ width: `${stats.occupationPct}%` }} />
