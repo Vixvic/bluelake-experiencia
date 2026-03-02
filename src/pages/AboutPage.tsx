@@ -31,7 +31,7 @@ const AboutPage: React.FC = () => {
                 <section className="relative h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden">
                     <div className="absolute inset-0">
                         <img
-                            src="https://images.unsplash.com/photo-1518182170546-0766de6b6aad?w=1920&q=85"
+                            src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1920&q=80"
                             alt="Amazonia Bluelake"
                             className="w-full h-full object-cover"
                         />
