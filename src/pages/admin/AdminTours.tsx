@@ -4,6 +4,16 @@ import { Plus, Pencil, Trash2, Eye, EyeOff, Star, X, Loader2, Upload, Image as I
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Tour {
   id: string;
@@ -47,6 +57,7 @@ const AdminTours: React.FC = () => {
   const [editingTour, setEditingTour] = useState<Partial<Tour> | null>(null);
   const [isNewTour, setIsNewTour] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [tourToDelete, setTourToDelete] = useState<string | null>(null);
 
   // Referencias para disparar los inputs de archivo de manera robusta
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -86,14 +97,16 @@ const AdminTours: React.FC = () => {
     fetchTours();
   };
 
-  const deleteTour = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar permanentemente este tour?\nEsta acción fallará si actualmente existen reservas asociadas a este tour.')) return;
-    const { error } = await supabase.from('tours').delete().eq('id', id);
+  const confirmDelete = async () => {
+    if (!tourToDelete) return;
+    const { error } = await supabase.from('tours').delete().eq('id', tourToDelete);
     if (error) {
-      alert('No se pudo eliminar el tour. Asegúrate de que no tenga reservas asociadas.\n' + error.message);
+      toast.error('No se pudo eliminar el tour. Asegúrate de que no tenga reservas asociadas.\n' + error.message);
     } else {
+      toast.success('Tour eliminado permanentemente.');
       fetchTours();
     }
+    setTourToDelete(null);
   };
 
   const handleEdit = (tour: Tour) => {
@@ -314,7 +327,7 @@ const AdminTours: React.FC = () => {
                       <button onClick={() => handleEdit(tour)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title="Editar">
                         <Pencil className="w-4 h-4 text-primary" />
                       </button>
-                      <button onClick={() => deleteTour(tour.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title="Eliminar">
+                      <button onClick={() => setTourToDelete(tour.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title="Eliminar">
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </button>
                     </div>
@@ -508,6 +521,24 @@ const AdminTours: React.FC = () => {
           </div>
         </div>
       )}
+
+      <AlertDialog open={!!tourToDelete} onOpenChange={(open) => !open && setTourToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Está seguro de eliminar este tour?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente el registro de la base de datos.
+              Esta acción fallará si el tour tiene reservas asociadas por integridad de datos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90 text-white">
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
