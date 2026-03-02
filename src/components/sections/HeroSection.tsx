@@ -148,12 +148,6 @@ const HeroSection: React.FC = () => {
                 {t('hero.cta')}
               </button>
             </a>
-            <a href="#muelle24">
-              <button className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold rounded-full text-lg transition-all flex items-center gap-2">
-                <Play className="w-5 h-5" />
-                {t('hero.ctaSecondary')}
-              </button>
-            </a>
           </motion.div>
         </div>
 
