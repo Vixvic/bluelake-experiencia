@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Pencil, Trash2, Eye, EyeOff, Star, X, Loader2, Upload, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, Star, X, Loader2, Upload, Image as ImageIcon, Search, Copy } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -58,6 +59,7 @@ const AdminTours: React.FC = () => {
   const [isNewTour, setIsNewTour] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [tourToDelete, setTourToDelete] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('todos');
 
   // Referencias para disparar los inputs de archivo de manera robusta
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -260,82 +262,140 @@ const AdminTours: React.FC = () => {
     setIsSaving(false);
   };
 
-  const filtered = tours.filter(t =>
-    t.title_es.toLowerCase().includes(search.toLowerCase()) ||
-    t.title_en.toLowerCase().includes(search.toLowerCase())
-  );
+  const dbCategories = Array.from(new Set(tours.map(t => t.category).filter(Boolean)));
+  const filterCategories = ['todos', ...dbCategories];
+
+  const filtered = tours.filter(t => {
+    const searchMatch = t.title_es.toLowerCase().includes(search.toLowerCase()) ||
+      t.title_en.toLowerCase().includes(search.toLowerCase());
+    const catMatch = activeCategory === 'todos' || t.category === activeCategory;
+    return searchMatch && catMatch;
+  });
+
+  const publishedCount = tours.filter(t => t.visible).length;
+  const hiddenCount = tours.filter(t => !t.visible).length;
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Gestión de Tours</h1>
-        <button onClick={handleNew} className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-dark text-primary-foreground font-semibold rounded-xl transition-all text-sm">
-          <Plus className="w-4 h-4" /> Nuevo tour
-        </button>
+    <div className="p-8 max-w-[1600px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-1">Catálogo de Tours</h1>
+          <p className="text-muted-foreground text-sm">Gestiona, edita y publica tus experiencias turísticas.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative w-full sm:w-80">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <Search className="w-4 h-4" />
+            </span>
+            <Input
+              placeholder="Buscar tour..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 bg-background h-10 w-full"
+            />
+          </div>
+          <button onClick={handleNew} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md transition-colors text-sm whitespace-nowrap shadow-sm">
+            <Plus className="w-5 h-5" /> Nuevo Tour
+          </button>
+        </div>
       </div>
 
-      <Input
-        placeholder="Buscar tours..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="mb-5 max-w-xs"
-      />
+      {/* Filters & Stats */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-wrap items-center gap-2">
+          {filterCategories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors border ${activeCategory === cat
+                ? 'bg-foreground text-background border-foreground shadow-sm'
+                : 'bg-card hover:bg-secondary text-muted-foreground border-border'
+                }`}
+            >
+              {cat === 'todos' ? 'Todos' : cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-5 text-sm whitespace-nowrap">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-jungle"></div>
+            <span className="text-muted-foreground font-medium">{publishedCount} Publicados</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40"></div>
+            <span className="text-muted-foreground font-medium">{hiddenCount} Ocultos</span>
+          </div>
+        </div>
+      </div>
 
+      {/* Grid Content */}
       {loading ? (
-        <p className="text-muted-foreground">Cargando tours...</p>
+        <div className="flex justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
       ) : (
-        <div className="rounded-2xl border border-border overflow-hidden bg-card">
-          <table className="w-full text-sm">
-            <thead className="bg-secondary/50 border-b border-border">
-              <tr>
-                {['Tour', 'Categoría', 'Temporada', 'Precio', 'Capacidad', 'Estado', 'Acciones'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 font-semibold text-foreground text-xs uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map((tour) => (
-                <tr key={tour.id} className="hover:bg-secondary/20">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {tour.premium && <Star className="w-3.5 h-3.5 text-accent-orange fill-accent-orange" />}
-                      <div>
-                        <div className="font-medium text-foreground">{tour.title_es}</div>
-                        <div className="text-xs text-muted-foreground">{tour.slug}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">{tour.category}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${tour.season === 'summer' ? 'bg-accent-orange/10 text-accent-orange' :
-                      tour.season === 'winter' ? 'bg-primary/10 text-primary' :
-                        'bg-jungle/10 text-jungle'
-                      }`}>{tour.season}</span>
-                  </td>
-                  <td className="px-4 py-3 font-semibold text-primary">S/ {tour.base_price}</td>
-                  <td className="px-4 py-3 text-foreground">{tour.current_bookings}/{tour.max_capacity}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${tour.visible ? 'bg-jungle/10 text-jungle' : 'bg-secondary text-muted-foreground'}`}>
-                      {tour.visible ? 'Visible' : 'Oculto'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => toggleVisible(tour.id, tour.visible)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title={tour.visible ? 'Ocultar' : 'Mostrar'}>
-                        {tour.visible ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-jungle" />}
-                      </button>
-                      <button onClick={() => handleEdit(tour)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title="Editar">
-                        <Pencil className="w-4 h-4 text-primary" />
-                      </button>
-                      <button onClick={() => setTourToDelete(tour.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors" title="Eliminar">
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filtered.map(tour => (
+            <div key={tour.id} className="bg-card rounded-xl border border-border overflow-hidden flex flex-col shadow-sm group hover:shadow-md transition-shadow">
+              {/* Image Header */}
+              <div className="relative aspect-[4/3] bg-secondary/30 overflow-hidden">
+                {tour.image_url ? (
+                  <img src={tour.image_url} alt={tour.title_es} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted"><ImageIcon className="w-10 h-10 opacity-20" /></div>
+                )}
+
+                {/* Category Badge overlay */}
+                <div className="absolute top-3 right-3 bg-white text-slate-900 text-[11px] font-bold px-3 py-1 rounded shadow-sm">
+                  {tour.category ? tour.category.charAt(0).toUpperCase() + tour.category.slice(1).replace(/-/g, ' ') : 'Tour'}
+                </div>
+              </div>
+
+              {/* Content body */}
+              <div className="p-5 flex flex-col gap-1 grow">
+                <div className="flex justify-between items-start gap-4">
+                  <h3 className="font-bold text-foreground text-lg leading-tight line-clamp-2">{tour.title_es}</h3>
+                  <div className="font-bold text-lg text-foreground whitespace-nowrap">S/ {tour.base_price}</div>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                  {tour.description_es || `${tour.max_capacity} pasajeros max`}
+                </p>
+
+                {/* Visual Separator */}
+                <div className="w-full h-px bg-border/50 my-4 mt-auto"></div>
+
+                {/* Footer Controls */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground font-medium">Visibilidad</span>
+                    <Switch checked={tour.visible} onCheckedChange={() => toggleVisible(tour.id, tour.visible)} />
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {/* Copy feature not requested heavily, but Delete is needed */}
+                    <button onClick={() => setTourToDelete(tour.id)} className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Eliminar">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleEdit(tour)} className="ml-1 px-4 py-1.5 border border-border rounded-md text-sm font-medium hover:bg-secondary text-foreground transition-colors shadow-sm">
+                      Editar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Special Create Tour Card */}
+          <button onClick={handleNew} className="bg-transparent rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-4 p-8 text-muted-foreground hover:text-foreground hover:border-foreground/40 hover:bg-card/30 transition-all aspect-[4/4] min-h-[360px] cursor-pointer">
+            <div className="w-14 h-14 rounded-full border border-current flex items-center justify-center bg-card shadow-sm group-hover:scale-110 transition-transform">
+              <Plus className="w-6 h-6" />
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-foreground text-base">Crear nuevo tour</p>
+              <p className="text-sm text-muted-foreground mt-1">Comienza desde cero</p>
+            </div>
+          </button>
         </div>
       )}
 
@@ -467,11 +527,9 @@ const AdminTours: React.FC = () => {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                     value={editingTour.category} onChange={e => setEditingTour({ ...editingTour, category: e.target.value })}
                   >
-                    <option value="naturaleza">Naturaleza</option>
-                    <option value="aventura">Aventura</option>
-                    <option value="cultura">Cultura</option>
-                    <option value="deportes-acuaticos">Deportes Acuáticos</option>
-                    <option value="premium">Premium</option>
+                    {Array.from(new Set(['naturaleza', 'aventura', 'cultura', 'deportes-acuaticos', 'premium', ...dbCategories])).map(cat => (
+                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
