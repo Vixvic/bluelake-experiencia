@@ -19,6 +19,9 @@ import AdminBookings from "./pages/admin/AdminBookings";
 import AdminSeasons from "./pages/admin/AdminSeasons";
 import AdminCorporate from "./pages/admin/AdminCorporate";
 import AdminSettings from "./pages/admin/AdminSettings";
+import ClientLogin from "./pages/client/ClientLogin";
+import ClientDashboard from "./pages/client/ClientDashboard";
+import ClientProfile from "./pages/client/ClientProfile";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +33,17 @@ function ProtectedAdmin({ children }: { children: React.ReactNode }) {
     </div>
   );
   if (!isAdmin) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+}
+
+function ProtectedClient({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+  if (!user) return <Navigate to="/client/login" replace />;
   return <>{children}</>;
 }
 
@@ -47,6 +61,13 @@ const App = () => (
                 <Route path="/nosotros" element={<AboutPage />} />
                 <Route path="/tours-iquitos/:slug" element={<TourDetailPage />} />
                 <Route path="/auth" element={<AuthPage />} />
+
+                {/* Client Portal */}
+                <Route path="/client/login" element={<ClientLogin />} />
+                <Route path="/client/dashboard" element={<ProtectedClient><ClientDashboard /></ProtectedClient>} />
+                <Route path="/client/profile" element={<ProtectedClient><ClientProfile /></ProtectedClient>} />
+
+                {/* Admin */}
                 <Route path="/admin" element={
                   <ProtectedAdmin>
                     <AdminLayout />
