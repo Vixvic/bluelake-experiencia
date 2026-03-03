@@ -134,11 +134,11 @@ const Navbar: React.FC = () => {
               {t('nav.login') || 'Iniciar sesión'}
             </Button>
           </Link>
-          <Link to="/#contacto">
+          <button onClick={() => handleHashClick('#experiencias')}>
             <Button className="bg-accent-orange hover:bg-accent-orange-hover text-white font-semibold px-5 rounded-full shadow-orange animate-pulse-orange">
               {t('nav.bookNow')}
             </Button>
-          </Link>
+          </button>
         </div>
 
         {/* Mobile hamburger */}
@@ -195,7 +195,7 @@ const Navbar: React.FC = () => {
                     <Globe className="w-3.5 h-3.5" />
                     {lang.toUpperCase()}
                   </button>
-                  <button onClick={() => { setMobileOpen(false); handleHashClick('#contacto'); }} className="flex-1">
+                  <button onClick={() => { setMobileOpen(false); handleHashClick('#experiencias'); }} className="flex-1">
                     <Button className="w-full bg-accent-orange hover:bg-accent-orange-hover text-white font-semibold rounded-full">
                       {t('nav.bookNow')}
                     </Button>
