@@ -56,9 +56,8 @@ const AdminLayout: React.FC = () => {
         <div className="p-3 border-t border-sidebar-border space-y-2">
           <div className="flex items-center gap-2 px-3 py-1.5">
             <span className="w-2 h-2 rounded-full bg-jungle animate-pulse" />
-            <span className="text-xs text-sidebar-foreground/60">Estado del Sistema</span>
+            <span className="text-xs font-medium text-sidebar-foreground">En línea</span>
           </div>
-          <div className="px-3 text-xs font-medium text-jungle">● En línea</div>
           <button
             onClick={handleSignOut}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors w-full"

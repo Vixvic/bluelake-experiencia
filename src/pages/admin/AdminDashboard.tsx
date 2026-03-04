@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
-import { Calendar, DollarSign, Users, TrendingUp, TrendingDown, Search, SlidersHorizontal, FileDown, Plus, Droplets } from 'lucide-react';
+import { Calendar, DollarSign, Users, TrendingUp, TrendingDown, Search, SlidersHorizontal, FileDown, Plus, Droplets, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Booking {
   id: string;
@@ -51,6 +57,7 @@ const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState({ todayCount: 0, yesterdayCount: 0, monthRevenue: 0, lastMonthRevenue: 0, occupationPct: 0 });
   const [seasonMode, setSeasonMode] = useState('auto');
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 3;
 
@@ -131,9 +138,11 @@ const AdminDashboard: React.FC = () => {
     });
   }, []);
 
-  const filteredBookings = bookings.filter(b =>
-    !searchQuery || b.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || b.customer_email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredBookings = bookings.filter(b => {
+    const matchesSearch = !searchQuery || b.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || b.customer_email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const totalPages = Math.ceil(filteredBookings.length / perPage);
   const paginatedBookings = filteredBookings.slice((currentPage - 1) * perPage, currentPage * perPage);
@@ -302,10 +311,32 @@ const AdminDashboard: React.FC = () => {
                   className="pl-9 h-9 w-52 text-sm"
                 />
               </div>
-              <Button variant="outline" size="sm" className="gap-2 text-sm">
-                <SlidersHorizontal className="w-4 h-4" />
-                Filtros
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 text-sm">
+                    <SlidersHorizontal className="w-4 h-4" />
+                    Filtros {statusFilter !== 'all' && <span className="w-2 h-2 rounded-full bg-primary" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => { setStatusFilter('all'); setCurrentPage(1); }} className="justify-between cursor-pointer">
+                    Todos los estados
+                    {statusFilter === 'all' && <Check className="w-4 h-4 text-primary" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setStatusFilter('confirmed'); setCurrentPage(1); }} className="justify-between cursor-pointer">
+                    Confirmados
+                    {statusFilter === 'confirmed' && <Check className="w-4 h-4 text-primary" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setStatusFilter('pending'); setCurrentPage(1); }} className="justify-between cursor-pointer">
+                    Pendientes
+                    {statusFilter === 'pending' && <Check className="w-4 h-4 text-primary" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setStatusFilter('cancelled'); setCurrentPage(1); }} className="justify-between cursor-pointer">
+                    Cancelados
+                    {statusFilter === 'cancelled' && <Check className="w-4 h-4 text-primary" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -366,10 +397,10 @@ const AdminDashboard: React.FC = () => {
             </span>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-                Prev
+                Atrás
               </Button>
               <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-                Next
+                Siguiente
               </Button>
             </div>
           </div>
