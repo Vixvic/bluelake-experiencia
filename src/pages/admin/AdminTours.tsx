@@ -65,6 +65,7 @@ const AdminTours: React.FC = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{ old: string, new: string } | null>(null);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
 
   // Referencias para disparar los inputs de archivo de manera robusta
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -162,11 +163,13 @@ const AdminTours: React.FC = () => {
   const handleEdit = (tour: Tour) => {
     setIsNewTour(false);
     setEditingTour(tour);
+    setIsAddingNewCategory(false);
   };
 
   const handleNew = () => {
     setIsNewTour(true);
     setEditingTour(defaultTour);
+    setIsAddingNewCategory(false);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -597,18 +600,52 @@ const AdminTours: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-semibold mb-1 block">Categoría</label>
-                  <Input
-                    list="category-options"
-                    value={editingTour.category}
-                    onChange={e => setEditingTour({ ...editingTour, category: e.target.value })}
-                    placeholder="Escribir o seleccionar..."
-                    required
-                  />
-                  <datalist id="category-options">
-                    {Array.from(new Set(['naturaleza', 'aventura', 'cultura', 'deportes-acuaticos', 'premium', ...dbCategories])).map(cat => (
-                      <option key={cat} value={cat} />
-                    ))}
-                  </datalist>
+                  {isAddingNewCategory ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={editingTour.category}
+                        onChange={e => setEditingTour({ ...editingTour, category: e.target.value })}
+                        placeholder="Nombre de nueva categoría..."
+                        className="flex-1"
+                        autoFocus
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAddingNewCategory(false);
+                          setEditingTour({ ...editingTour, category: dbCategories[0] || 'naturaleza' });
+                        }}
+                        className="p-2 border border-border rounded-md hover:bg-secondary text-muted-foreground transition-colors shrink-0"
+                        title="Cancelar y volver a seleccionar"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={editingTour.category}
+                      onChange={e => {
+                        if (e.target.value === 'ADD_NEW_CATEGORY_OPTION') {
+                          setIsAddingNewCategory(true);
+                          setEditingTour({ ...editingTour, category: '' });
+                        } else {
+                          setEditingTour({ ...editingTour, category: e.target.value });
+                        }
+                      }}
+                      required
+                    >
+                      {Array.from(new Set(['naturaleza', 'aventura', 'cultura', 'deportes-acuaticos', 'premium', ...dbCategories])).map(cat => (
+                        <option key={cat} value={cat}>
+                          {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
+                        </option>
+                      ))}
+                      <option value="ADD_NEW_CATEGORY_OPTION" className="font-bold text-primary">
+                        + Añadir nueva categoría
+                      </option>
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-semibold mb-1 block">Temporada</label>
@@ -735,7 +772,7 @@ const AdminTours: React.FC = () => {
                   ¿Cómo agrego una nueva categoría?
                 </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Las categorías se crean automáticamente cuando asignas un nuevo nombre de categoría en el formulario de creación o edición de un tour.
+                  Las categorías se crean automáticamente al seleccionar la opción <strong>"+ Añadir nueva categoría"</strong> en el desplegable de Categoría al crear o editar un tour.
                 </p>
               </div>
             </div>
