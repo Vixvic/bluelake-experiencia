@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Pencil, Trash2, Eye, EyeOff, Star, X, Loader2, Upload, Image as ImageIcon, Search, Copy } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, Star, X, Loader2, Upload, Image as ImageIcon, Search, Copy, Settings2, Save, Clock, Users, Check } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -61,6 +61,11 @@ const AdminTours: React.FC = () => {
   const [tourToDelete, setTourToDelete] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('todos');
 
+  // Estados Categorías
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<{ old: string, new: string } | null>(null);
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+
   // Referencias para disparar los inputs de archivo de manera robusta
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -109,6 +114,49 @@ const AdminTours: React.FC = () => {
       fetchTours();
     }
     setTourToDelete(null);
+  };
+
+  const handleUpdateCategory = async () => {
+    if (!editingCategory || !editingCategory.new.trim()) return;
+    if (editingCategory.old === editingCategory.new.trim()) {
+      setEditingCategory(null);
+      return;
+    }
+
+    setIsSavingCategory(true);
+    const newCategorySlug = editingCategory.new.trim().toLowerCase().replace(/\s+/g, '-');
+    const { error } = await supabase
+      .from('tours')
+      .update({ category: newCategorySlug })
+      .eq('category', editingCategory.old);
+
+    if (error) {
+      toast.error('Error actualizando la categoría: ' + error.message);
+    } else {
+      toast.success('Categoría actualizada exitosamente');
+      setEditingCategory(null);
+      fetchTours();
+    }
+    setIsSavingCategory(false);
+  };
+
+  const handleDeleteCategory = async (catToDelete: string) => {
+    if (!confirm(`¿Estás seguro de eliminar la categoría "${catToDelete}"? Los tours que pertenezcan a ella quedarán como "otros".`)) return;
+
+    setIsSavingCategory(true);
+    const { error } = await supabase
+      .from('tours')
+      .update({ category: 'otros' })
+      .eq('category', catToDelete);
+
+    if (error) {
+      toast.error('Error eliminando la categoría: ' + error.message);
+    } else {
+      toast.success('Categoría eliminada');
+      if (activeCategory === catToDelete) setActiveCategory('todos');
+      fetchTours();
+    }
+    setIsSavingCategory(false);
   };
 
   const handleEdit = (tour: Tour) => {
@@ -303,28 +351,39 @@ const AdminTours: React.FC = () => {
 
       {/* Filters & Stats */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div className="flex flex-wrap items-center gap-2">
-          {filterCategories.map(cat => (
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2">
+            {filterCategories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-colors border ${activeCategory === cat
+                  ? 'bg-primary text-white border-primary shadow-sm'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary'
+                  }`}
+              >
+                {cat === 'todos' ? 'Todos' : cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
+              </button>
+            ))}
+
+            {/* Botón Gestión de Categorías (Alternativa 2) */}
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors border ${activeCategory === cat
-                ? 'bg-foreground text-background border-foreground shadow-sm'
-                : 'bg-card hover:bg-secondary text-muted-foreground border-border'
-                }`}
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="ml-1 flex-shrink-0 size-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 transition-colors border border-transparent hover:border-slate-300 dark:hover:border-slate-600"
+              title="Gestionar Categorías"
             >
-              {cat === 'todos' ? 'Todos' : cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
+              <Settings2 className="w-4 h-4" />
             </button>
-          ))}
+          </div>
         </div>
-        <div className="flex items-center gap-5 text-sm whitespace-nowrap">
+        <div className="flex items-center gap-5 text-sm whitespace-nowrap hidden sm:flex">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-jungle"></div>
-            <span className="text-muted-foreground font-medium">{publishedCount} Publicados</span>
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">{publishedCount} Publicados</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40"></div>
-            <span className="text-muted-foreground font-medium">{hiddenCount} Ocultos</span>
+            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">{hiddenCount} Ocultos</span>
           </div>
         </div>
       </div>
@@ -337,47 +396,62 @@ const AdminTours: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map(tour => (
-            <div key={tour.id} className="bg-card rounded-xl border border-border overflow-hidden flex flex-col shadow-sm group hover:shadow-md transition-shadow">
+            <div key={tour.id} className="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800 flex flex-col">
               {/* Image Header */}
-              <div className="relative aspect-[4/3] bg-secondary/30 overflow-hidden">
+              <div className="relative h-48 overflow-hidden shrink-0">
                 {tour.image_url ? (
-                  <img src={tour.image_url} alt={tour.title_es} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={tour.image_url} alt={tour.title_es} className={`w-full h-full object-cover transition-transform duration-500 ${!tour.visible ? 'grayscale opacity-80 group-hover:scale-105' : 'group-hover:scale-105'}`} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted"><ImageIcon className="w-10 h-10 opacity-20" /></div>
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-slate-100 dark:bg-slate-800"><ImageIcon className="w-10 h-10 opacity-20" /></div>
                 )}
 
-                {/* Category Badge overlay */}
-                <div className="absolute top-3 right-3 bg-white text-slate-900 text-[11px] font-bold px-3 py-1 rounded shadow-sm">
-                  {tour.category ? tour.category.charAt(0).toUpperCase() + tour.category.slice(1).replace(/-/g, ' ') : 'Tour'}
+                <div className="absolute top-3 right-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                    {tour.visible ? 'Visible' : 'Oculto'}
+                  </span>
+                  <div className={`size-2 rounded-full ${tour.visible ? 'bg-green-500' : 'bg-slate-400'}`}></div>
                 </div>
+
+                {tour.category && (
+                  <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm text-slate-900 dark:text-white text-[11px] font-bold px-2 py-1 rounded shadow-sm">
+                    {tour.category.charAt(0).toUpperCase() + tour.category.slice(1).replace(/-/g, ' ')}
+                  </div>
+                )}
               </div>
 
               {/* Content body */}
-              <div className="p-5 flex flex-col gap-1 grow">
-                <div className="flex justify-between items-start gap-4">
-                  <h3 className="font-bold text-foreground text-lg leading-tight line-clamp-2">{tour.title_es}</h3>
-                  <div className="font-bold text-lg text-foreground whitespace-nowrap">S/ {tour.base_price}</div>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                  {tour.description_es || `${tour.max_capacity} pasajeros max`}
+              <div className="p-5 flex flex-col grow">
+                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">{tour.title_es}</h3>
+                <p className="text-primary font-bold text-xl mb-1">
+                  S/ {tour.base_price} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">PEN</span>
                 </p>
 
-                {/* Visual Separator */}
-                <div className="w-full h-px bg-border/50 my-4 mt-auto"></div>
+                <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm mb-4">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    Flexible
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" />
+                    {tour.max_capacity}+
+                  </span>
+                </div>
 
-                {/* Footer Controls */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground font-medium">Visibilidad</span>
-                    <Switch checked={tour.visible} onCheckedChange={() => toggleVisible(tour.id, tour.visible)} />
+                <div className="flex flex-wrap items-center justify-between pt-4 mt-auto border-t border-slate-100 dark:border-slate-800 gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold uppercase ${tour.visible ? 'text-slate-400' : 'text-slate-400'}`}>
+                      Visibilidad
+                    </span>
+                    <Switch checked={tour.visible} onCheckedChange={() => toggleVisible(tour.id, tour.visible)}
+                      className="data-[state=checked]:bg-primary"
+                    />
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {/* Copy feature not requested heavily, but Delete is needed */}
-                    <button onClick={() => setTourToDelete(tour.id)} className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Eliminar">
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <button onClick={() => setTourToDelete(tour.id)} className="p-2 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Eliminar">
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleEdit(tour)} className="ml-1 px-4 py-1.5 border border-border rounded-md text-sm font-medium hover:bg-secondary text-foreground transition-colors shadow-sm">
+                    <button onClick={() => handleEdit(tour)} className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md text-sm font-medium hover:border-primary text-slate-600 dark:text-slate-300 transition-colors shadow-sm">
                       Editar
                     </button>
                   </div>
@@ -523,14 +597,18 @@ const AdminTours: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-semibold mb-1 block">Categoría</label>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-                    value={editingTour.category} onChange={e => setEditingTour({ ...editingTour, category: e.target.value })}
-                  >
+                  <Input
+                    list="category-options"
+                    value={editingTour.category}
+                    onChange={e => setEditingTour({ ...editingTour, category: e.target.value })}
+                    placeholder="Escribir o seleccionar..."
+                    required
+                  />
+                  <datalist id="category-options">
                     {Array.from(new Set(['naturaleza', 'aventura', 'cultura', 'deportes-acuaticos', 'premium', ...dbCategories])).map(cat => (
-                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}</option>
+                      <option key={cat} value={cat} />
                     ))}
-                  </select>
+                  </datalist>
                 </div>
                 <div>
                   <label className="text-sm font-semibold mb-1 block">Temporada</label>
@@ -576,6 +654,91 @@ const AdminTours: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Management Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setIsCategoryModalOpen(false)}>
+          <div className="bg-card w-full max-w-md rounded-2xl shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-border flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Gestionar Categorías</h2>
+                <p className="text-xs text-muted-foreground mt-1">Renombra o elimina las categorías asignadas a los tours.</p>
+              </div>
+              <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="p-2 hover:bg-secondary rounded-full">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
+              {dbCategories.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No hay categorías registradas.</p>
+              ) : (
+                <div className="space-y-3">
+                  {dbCategories.map(cat => (
+                    <div key={cat} className="flex items-center justify-between p-3 border border-border rounded-lg bg-card hover:bg-secondary/50 transition-colors">
+                      {editingCategory?.old === cat ? (
+                        <div className="flex items-center gap-2 w-full">
+                          <Input
+                            value={editingCategory.new}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, new: e.target.value })}
+                            className="h-8 text-sm"
+                            autoFocus
+                          />
+                          <button
+                            disabled={isSavingCategory}
+                            onClick={handleUpdateCategory}
+                            className="p-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                          >
+                            {isSavingCategory ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => setEditingCategory(null)}
+                            className="p-1.5 bg-secondary text-foreground rounded-md hover:bg-secondary/80 border border-border"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="font-medium text-sm text-foreground">
+                            {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => setEditingCategory({ old: cat, new: cat })}
+                              className="p-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                              title="Editar nombre"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCategory(cat)}
+                              className="p-1.5 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                              title="Eliminar categoría"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <h4 className="text-sm font-semibold text-primary mb-1 flex items-center gap-2">
+                  <Star className="w-4 h-4" />
+                  ¿Cómo agrego una nueva categoría?
+                </h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Las categorías se crean automáticamente cuando asignas un nuevo nombre de categoría en el formulario de creación o edición de un tour.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
