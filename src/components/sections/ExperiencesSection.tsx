@@ -26,7 +26,7 @@ interface Tour {
   images: string[];
 }
 
-const CATEGORY_ORDER = ['premium', 'full-days', 'acuaticas', 'naturaleza'];
+
 
 const ExperiencesSection: React.FC = () => {
   const { t } = useTranslation();
@@ -57,12 +57,25 @@ const ExperiencesSection: React.FC = () => {
     (tour) => tour.season === 'all' || tour.season === selectedSeason
   );
 
-  // Group by category
-  const grouped = CATEGORY_ORDER.map((cat) => ({
-    category: cat,
-    label: t(`experiences.categories.${cat}`),
-    tours: seasonTours.filter((tour) => tour.category === cat),
-  })).filter((group) => group.tours.length > 0);
+  // Extract unique categories dynamically from the filtered tours
+  const uniqueCategories = Array.from(new Set(seasonTours.map(tour => tour.category).filter(Boolean)));
+
+  // Group by category format
+  const grouped = uniqueCategories.map((cat) => {
+    // Attempt to get the label from i18n, fallback to formatted category string
+    const translationKey = `experiences.categories.${cat}`;
+    const translatedLabel = t(translationKey);
+    // If translation doesn't match the key, it means a translation was found
+    const label = translatedLabel === translationKey
+      ? cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ') // Fallback formatting
+      : translatedLabel;
+
+    return {
+      category: cat,
+      label: label,
+      tours: seasonTours.filter((tour) => tour.category === cat),
+    };
+  }).filter((group) => group.tours.length > 0);
 
   return (
     <>
