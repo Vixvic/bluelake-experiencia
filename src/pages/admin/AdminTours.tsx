@@ -627,7 +627,7 @@ const AdminTours: React.FC = () => {
                       }}
                       required
                     >
-                      {Array.from(new Set(['naturaleza', 'aventura', 'cultura', 'deportes-acuaticos', 'premium', ...dbCategories])).map(cat => (
+                      {Array.from(new Set(['naturaleza', 'aventura', 'cultura', 'actividades-acuaticas', 'premium', ...dbCategories])).map(cat => (
                         <option key={cat} value={cat}>
                           {cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, ' ')}
                         </option>
