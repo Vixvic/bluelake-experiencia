@@ -82,7 +82,7 @@ const HeroSection: React.FC = () => {
   }
 
   return (
-    <section className="relative h-screen min-h-[600px] flex items-end overflow-hidden bg-black">
+    <section className="relative h-screen min-h-[600px] flex flex-col justify-end overflow-hidden bg-black pt-28">
       {/* Background slideshow */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -106,7 +106,7 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
       {/* Content — positioned bottom-left like Disney+ */}
-      <div className="relative z-10 container-bluelake pb-24 md:pb-32 w-full">
+      <div className="relative z-10 container-bluelake pb-20 md:pb-32 w-full mt-auto">
         <div className="max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
