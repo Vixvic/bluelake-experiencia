@@ -82,7 +82,7 @@ const HeroSection: React.FC = () => {
   }
 
   return (
-    <section className="relative h-screen min-h-[600px] flex flex-col justify-end overflow-hidden bg-black pt-28">
+    <section className="relative w-full min-h-[100svh] flex flex-col overflow-hidden bg-black">
       {/* Background slideshow */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -105,8 +105,11 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
 
+      {/* Spacer superior para proteger al Navbar en resolución baja/texto largo */}
+      <div className="relative z-10 flex-1 min-h-[140px] w-full pointer-events-none" />
+
       {/* Content — positioned bottom-left like Disney+ */}
-      <div className="relative z-10 container-bluelake pb-20 md:pb-32 w-full mt-auto">
+      <div className="relative z-10 container-bluelake pb-20 md:pb-32 w-full flex-none">
         <div className="max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -123,7 +126,7 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.05] mb-4 text-white whitespace-pre-line"
+            className="text-4xl md:text-5xl lg:text-[4rem] xl:text-7xl font-bold leading-[1.05] mb-4 text-white whitespace-pre-line"
           >
             {t('hero.title')}
           </motion.h1>
