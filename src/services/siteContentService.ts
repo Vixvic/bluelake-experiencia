@@ -3,8 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 export interface HeroSlide {
     id: string;
     image_url: string;
+    video_url?: string; // Para extender a full con video background
     title_es: string;
     title_en: string;
+    subtitle_es?: string;
+    subtitle_en?: string;
     order: number;
 }
 

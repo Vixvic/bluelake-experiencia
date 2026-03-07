@@ -17,7 +17,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminTours from "./pages/admin/AdminTours";
 import AdminBookings from "./pages/admin/AdminBookings";
 import AdminSeasons from "./pages/admin/AdminSeasons";
-import AdminCorporate from "./pages/admin/AdminCorporate";
+import AdminContenido from "./pages/admin/AdminContenido";
 import AdminSettings from "./pages/admin/AdminSettings";
 import ClientLogin from "./pages/client/ClientLogin";
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -78,7 +78,7 @@ const App = () => (
                   <Route path="tours" element={<AdminTours />} />
                   <Route path="bookings" element={<AdminBookings />} />
                   <Route path="seasons" element={<AdminSeasons />} />
-                  <Route path="corporate" element={<AdminCorporate />} />
+                  <Route path="contenido" element={<AdminContenido />} />
                   <Route path="settings" element={<AdminSettings />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

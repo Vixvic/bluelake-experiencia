@@ -18,7 +18,7 @@ const AdminLayout: React.FC = () => {
     { to: '/admin/bookings', label: 'Gestión de Reservas', icon: Calendar },
     { to: '/admin/tours', label: 'Catálogo de Tours', icon: Map },
     { to: '/admin/seasons', label: 'Lógica Estacional', icon: Cloud },
-    { to: '/admin/corporate', label: 'Contenido Web', icon: FileText },
+    { to: '/admin/contenido', label: 'Contenido Web', icon: FileText },
     { to: '/admin/settings', label: 'Configuración', icon: Settings },
   ];
 
