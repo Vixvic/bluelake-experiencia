@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                        "sidebar-dark": "#1e0f24",
+                        "sidebar-active": "#40204b",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 bg-sidebar-dark flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div>
+<h1 class="text-white text-base font-bold leading-tight">Bluelake</h1>
+<p class="text-[#bd8dce] text-xs">Admin Panel</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-sidebar-active/50 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white bg-sidebar-active rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined filled-icon">map</span>
+<span class="text-sm font-medium">Tours</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-sidebar-active/50 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-sm font-medium">Reservas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-sidebar-active/50 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-sidebar-active/50 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Configuración</span>
+</a>
+</nav>
+<div class="p-4 mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#e6a1ff] text-[#1e0f24] rounded-xl font-bold text-sm">
+<span class="material-symbols-outlined text-sm">logout</span>
+                    Cerrar Sesión
+                </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/50 flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-8 flex-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">explore</span>
+<h2 class="text-lg font-bold tracking-tight">Catálogo de Tours</h2>
+</div>
+<div class="relative w-full max-w-xs">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/50" placeholder="Buscar tours..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-lg">add</span>
+                        Nuevo Tour
+                    </button>
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="User profile avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrHKBF6wqFU-fXO9BDs6xtWfkmel4sTxRwwbdxZ1X5qM5DDpE97omAjRCYY50_H2U0hEHm-Sw3MaOCUSMbjLrpd1ISJlRLGPYXPMBEPN3aybD-5sXi2w-KTRAPICuFpaqzU9ggeX-vLFt43pKwK7TwFveGGPx_CLKeOlcDuM0lNXqVmlNqB8Sm0C4oLxryiNL1_V83MiSw21PnfltWEBk1jjtjnUf5FjkP6uK9mlLQp2A6__Y36xUnLol6vJOfDFgRSksxnnmizIY"/>
+</div>
+</div>
+</header>
+<!-- Filters & Grid Content -->
+<div class="flex-1 overflow-y-auto p-8">
+<!-- Categories -->
+<div class="flex gap-3 mb-8">
+<button class="px-5 py-2 bg-primary text-white rounded-full text-sm font-medium">Todos</button>
+<button class="px-5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm font-medium hover:border-primary transition-colors">Adrenalina</button>
+<button class="px-5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm font-medium hover:border-primary transition-colors">Naturaleza</button>
+<button class="px-5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-sm font-medium hover:border-primary transition-colors">Premium</button>
+</div>
+<!-- Tours Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+<!-- Card 1 -->
+<div class="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Amazonas rainforest lush jungle landscape" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-a4zhDwBKs2TezhsW28Dxp1XpHnUSls1gEx69NlSg2gR3cT1afru2QncPywnJYDZcA0TClpzGkFAZB_PVyrHMW_4OM6o1uOsqgai0P3DNUblkK7RN0a8pQKk0oSuCZI6G9vqQjkzmLKDrFKNuMjTldIC92l2ndcW5bN2sNkVg2oG95vk4jY4fq0HTqpABT8duB4TvbGic7gPv-8yuTkFcVjBf1DdAViypph1zwystM8lXw85Pr5IbQSl_H3CkIZESFlUozzQGhtk"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Visible</span>
+<div class="size-2 rounded-full bg-green-500"></div>
+</div>
+</div>
+<div class="p-5">
+<h3 class="font-bold text-lg mb-1 group-hover:text-primary transition-colors">Amazonas Full Day</h3>
+<p class="text-primary font-bold text-xl mb-1">$120 <span class="text-xs font-normal text-slate-500 dark:text-slate-400">USD</span></p>
+<div class="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 8 horas</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">person</span> 12+</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<span class="text-xs font-semibold text-slate-400 uppercase">Estado: Visible</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Sunset ocean beach horizon scenery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Bd5AcuDY85CDwoqkKfWCBJPElTejaJV0qp3moVzAnHuccGdLigqFyLnp3Z2Sg-N0Sbixhp5-MGVI7ta3tDUq0Uo8ZZ3JyX3EJlGH5cBNCj8wICm0mTpMu-ZTivqY0iu0gbQuGTvH7tePexpfJGY1JFMhqzA0syfryluhHm1l2tyZI3axObZBMMAL1FBcOyB43WTJ6K2bKDY1_Tm8fAtGmx5ct03Qzp37G21bfoiqjzFZLoZ47UOhU9Nh17YZH9xaIHIsWVcwOG0"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Visible</span>
+<div class="size-2 rounded-full bg-green-500"></div>
+</div>
+</div>
+<div class="p-5">
+<h3 class="font-bold text-lg mb-1 group-hover:text-primary transition-colors">Sunset Experience</h3>
+<p class="text-primary font-bold text-xl mb-1">$85 <span class="text-xs font-normal text-slate-500 dark:text-slate-400">USD</span></p>
+<div class="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 4 horas</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">person</span> Todas</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<span class="text-xs font-semibold text-slate-400 uppercase">Estado: Visible</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800">
+<div class="relative h-48 overflow-hidden grayscale opacity-80">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Dense green mountain forest hiking trail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy3x5BABWjEXyxWLwyIO0mqWrtHTY29zZLoru1TgNb18Zr0kxdWZzJdu-BvoX8bRPi521mjPSQzSZVyl49QMk8z6COVfX8pePQKwakRpAHb2qrcK6F59-cxPwt13aNrViNKQnY0d89oEQte1o-Bk0Q8DGk8XZ1-IVF2qVpnzCTEdpRB9NRIrFDPc5o8HSXgtpL3uV70VdBovHY1wOcBad_hbcVRbO3Hpb-6HnNnXiOpE3grxbz7vNAAebzmB-4JYaTB_HWQ-5kyNQ"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Oculto</span>
+<div class="size-2 rounded-full bg-slate-400"></div>
+</div>
+</div>
+<div class="p-5">
+<h3 class="font-bold text-lg mb-1 group-hover:text-primary transition-colors">Caminata Selva</h3>
+<p class="text-primary font-bold text-xl mb-1">$50 <span class="text-xs font-normal text-slate-500 dark:text-slate-400">USD</span></p>
+<div class="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 3 horas</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">person</span> 18+</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<span class="text-xs font-semibold text-slate-400 uppercase">Estado: Oculto</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-100 dark:border-slate-800">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Fishing boat on calm water lake" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATqa9wYrnsi-5ckOmacaZyE322av8P5ulD9WTZXsX75183CCAXEbMR7oDMzO7fL1Sm4HnH6ICvekeHuZcUHSdDuz2AZK3xVYIPwspDSNFMFIT8nrm4dtoZJGtC5-ltEH7kmeoaJDna2mh_AciVVLBlt_tY29ouOPFMdyZSFuKl5FHxmOvvKGi9vskKHAZ19PcTsUwJzybSLHyye8L4TsRLUFZIiqNGu66p3QyhIvcdYuX8oJVhOMBkygfZRgXzmmsC_Hd1EKM35Vk"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Visible</span>
+<div class="size-2 rounded-full bg-green-500"></div>
+</div>
+</div>
+<div class="p-5">
+<h3 class="font-bold text-lg mb-1 group-hover:text-primary transition-colors">Tour de Pesca</h3>
+<p class="text-primary font-bold text-xl mb-1">$95 <span class="text-xs font-normal text-slate-500 dark:text-slate-400">USD</span></p>
+<div class="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 5 horas</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">person</span> 10+</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<span class="text-xs font-semibold text-slate-400 uppercase">Estado: Visible</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button for Mobile / Quick Access -->
+<div class="fixed bottom-8 right-8 lg:hidden">
+<button class="size-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

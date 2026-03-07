@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Panel de Control Administrador Bluelake</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1A9C8D",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["'Open Sans'", "sans-serif"],
+                        "sans": ["'Open Sans'", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1A9C8D66; 
+        }
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display antialiased">
+<div class="flex h-screen w-full overflow-hidden">
+<aside class="w-64 flex-shrink-0 border-r border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between overflow-y-auto">
+<div class="flex flex-col gap-6 p-4">
+<div class="flex items-center gap-3 px-2">
+<div class="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-slate-100 dark:ring-slate-700">
+<img alt="Profile" class="h-full w-full object-cover" data-alt="User profile picture placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9wrlbADoqOjld2Pph6U4tDXiS7J9BlnZdLGipo5NGQRg_tbMw5q7MtSVtV1EWnaeDOupSGC4232zj-rl6pHqyAnXHn-GErTn1dbxKf4ZU_Jp-DPlcxo0RVW25QwlQurFC8j2QgFIEQvMmWWN1c7iuDO54uB7gLMw_fQEF5aw8SgoYIPG5ttG7ZNGODt2sthZwOkF2uP5HWSg8y9hPA97lx4eCZKCJpjjT-Xs6t8DgbXMvuzwJzt4iQMq1-GmdEqEQNSxjmobhhpg" style=""/>
+</div>
+<div class="flex flex-col">
+<h1 class="text-sm font-semibold text-slate-900 dark:text-white">Bluelake Admin</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400">Panel de Control</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-primary dark:text-primary" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-sm font-medium">Dashboard Overview</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span class="text-sm font-medium">Gestión de Reservas</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">tour</span>
+<span class="text-sm font-medium">Catálogo de Tours</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">water_drop</span>
+<span class="text-sm font-medium">Lógica Estacional</span>
+</a>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">perm_media</span>
+<span class="text-sm font-medium">Contenido Web</span>
+</a>
+<div class="my-2 h-px bg-slate-200 dark:bg-slate-800"></div>
+<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="text-sm font-medium">Configuración</span>
+</a>
+</nav>
+</div>
+<div class="p-4">
+<div class="rounded-lg bg-slate-50 p-4 dark:bg-slate-800/50">
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Estado del Sistema</p>
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">En línea</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-8">
+<div class="mx-auto max-w-7xl flex flex-col gap-8">
+<div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Resumen del Día</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400">Bienvenido de nuevo, administrador.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 rounded-lg bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+                        Exportar Reporte
+                    </button>
+<button class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Nueva Reserva
+                    </button>
+</div>
+</div>
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700">
+<div class="flex items-center justify-between">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Reservas hoy</p>
+<span class="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 text-primary dark:bg-teal-900/30 dark:text-primary">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">12</span>
+<span class="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +20%
+                        </span>
+</div>
+</div>
+<div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700">
+<div class="flex items-center justify-between">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Ingresos del mes</p>
+<span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+<span class="material-symbols-outlined text-[20px]">attach_money</span>
+</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">S/ 14,500</span>
+<span class="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +15%
+                        </span>
+</div>
+</div>
+<div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700">
+<div class="flex items-center justify-between">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Ocupación Experiencias</p>
+<span class="flex h-8 w-8 items-center justify-center rounded-full bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+<span class="material-symbols-outlined text-[20px]">anchor</span>
+</span>
+</div>
+<div class="mt-4 flex items-baseline gap-2">
+<span class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">78%</span>
+<span class="text-sm font-medium text-rose-600 dark:text-rose-400 flex items-center">
+<span class="material-symbols-outlined text-[16px]">trending_down</span>
+                            -5%
+                        </span>
+</div>
+<div class="mt-3 h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-700">
+<div class="h-1.5 rounded-full bg-orange-500" style="width: 78%"></div>
+</div>
+</div>
+</div>
+<div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700">
+<div class="mb-4 flex items-center justify-between">
+<div>
+<h3 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">water_drop</span>
+                            Control de Estado del Río (Lógica Estacional)
+                        </h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Determina qué tours y vistas se muestran en la web pública.</p>
+</div>
+<span class="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/10 dark:bg-teal-400/10 dark:text-primary dark:ring-primary/30">
+                        Actual: Automático
+                    </span>
+</div>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+<label class="relative flex cursor-pointer rounded-lg border border-primary bg-teal-50/50 p-4 shadow-sm focus:outline-none dark:bg-teal-900/20 dark:border-primary">
+<input checked="" class="sr-only" name="seasonal-logic" type="radio" value="auto"/>
+<span class="flex flex-1">
+<span class="flex flex-col">
+<span class="block text-sm font-medium text-primary dark:text-primary">Automático</span>
+<span class="mt-1 flex items-center text-xs text-slate-500 dark:text-slate-400">Basado en fecha del servidor</span>
+</span>
+</span>
+<span aria-hidden="true" class="material-symbols-outlined text-primary dark:text-primary">check_circle</span>
+</label>
+<label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-750">
+<input class="sr-only" name="seasonal-logic" type="radio" value="vaciante"/>
+<span class="flex flex-1">
+<span class="flex flex-col">
+<span class="block text-sm font-medium text-slate-900 dark:text-white">Manual: Vaciante</span>
+<span class="mt-1 flex items-center text-xs text-slate-500 dark:text-slate-400">Temporada seca (Playas visibles)</span>
+</span>
+</span>
+<span aria-hidden="true" class="material-symbols-outlined text-transparent">circle</span>
+</label>
+<label class="relative flex cursor-pointer rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-750">
+<input class="sr-only" name="seasonal-logic" type="radio" value="creciente"/>
+<span class="flex flex-1">
+<span class="flex flex-col">
+<span class="block text-sm font-medium text-slate-900 dark:text-white">Manual: Creciente</span>
+<span class="mt-1 flex items-center text-xs text-slate-500 dark:text-slate-400">Temporada alta (Selva inundada)</span>
+</span>
+</span>
+<span aria-hidden="true" class="material-symbols-outlined text-transparent">circle</span>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Últimas Reservas</h3>
+<div class="flex gap-2">
+<div class="relative">
+<input class="h-9 w-48 rounded-md border-0 bg-white pl-9 pr-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:ring-primary sm:text-sm sm:leading-6" placeholder="Buscar cliente..." type="text"/>
+<div class="absolute inset-y-0 left-0 flex items-center pl-2">
+<span class="material-symbols-outlined text-slate-400 text-[18px]">search</span>
+</div>
+</div>
+<button class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined text-[18px] mr-1">filter_list</span>
+                                Filtros
+                            </button>
+</div>
+</div>
+<div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700">
+<div class="overflow-x-auto">
+<table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+<thead class="bg-slate-50 dark:bg-slate-800/50">
+<tr>
+<th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400" scope="col">Cliente</th>
+<th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400" scope="col">Tour</th>
+<th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400" scope="col">Fecha</th>
+<th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400" scope="col">Estado</th>
+<th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400" scope="col">Pago</th>
+<th class="relative px-6 py-3" scope="col"><span class="sr-only">Acciones</span></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-800">
+<tr>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center">
+<div class="h-8 w-8 flex-shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold">JD</div>
+<div class="ml-4">
+<div class="font-medium text-slate-900 dark:text-white">Juan Diaz</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">juan.d@email.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="text-sm text-slate-900 dark:text-white">Amazonas Full Day</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">2 Adultos</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="text-sm text-slate-900 dark:text-white">24 Oct, 2023</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800 dark:bg-green-900/30 dark:text-green-400">Confirmado</span>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">smartphone</span> Yape</span>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+<a class="text-primary hover:opacity-80" href="#">Editar</a>
+</td>
+</tr>
+<tr>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center">
+<div class="h-8 w-8 flex-shrink-0 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 text-xs font-bold">MR</div>
+<div class="ml-4">
+<div class="font-medium text-slate-900 dark:text-white">Maria Rodriguez</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">mariar@email.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="text-sm text-slate-900 dark:text-white">Sunset Private</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">4 Personas</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="text-sm text-slate-900 dark:text-white">25 Oct, 2023</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Pendiente</span>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">account_balance</span> BCP</span>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+<a class="text-primary hover:opacity-80" href="#">Editar</a>
+</td>
+</tr>
+<tr>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="flex items-center">
+<div class="h-8 w-8 flex-shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold">CL</div>
+<div class="ml-4">
+<div class="font-medium text-slate-900 dark:text-white">Carlos Lopez</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">carlos.lpz@email.com</div>
+</div>
+</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="text-sm text-slate-900 dark:text-white">Pesca Deportiva</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">1 Adulto</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<div class="text-sm text-slate-900 dark:text-white">26 Oct, 2023</div>
+</td>
+<td class="whitespace-nowrap px-6 py-4">
+<span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800 dark:bg-green-900/30 dark:text-green-400">Confirmado</span>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">credit_card</span> Tarjeta</span>
+</td>
+<td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+<a class="text-primary hover:opacity-80" href="#">Editar</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-slate-50 px-6 py-3 border-t border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+<div class="flex items-center justify-between">
+<div class="text-sm text-slate-500 dark:text-slate-400">
+                                    Mostrando <span class="font-medium">1</span> a <span class="font-medium">3</span> de <span class="font-medium">24</span> resultados
+                                </div>
+<div class="flex gap-2">
+<button class="rounded border border-slate-300 bg-white px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">Prev</button>
+<button class="rounded border border-slate-300 bg-white px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">Next</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Gestión de Contenido Rápida</h3>
+<div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Historia del Usuario</h4>
+<button class="text-primary hover:opacity-80 text-xs font-medium">Ver todo</button>
+</div>
+<div class="group relative aspect-video overflow-hidden rounded-lg bg-slate-100">
+<img alt="Story Preview" class="h-full w-full object-cover transition-transform group-hover:scale-105" data-alt="River boat tour at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBC5ROxYw1PE9xSTQlUEEh2EPOUQQqG93NmJhI3p7M8jqFIi1qPOv9G-xLswDZ42l5dQEg1iVr8XzYcYl0GgyXfJ17Epv0vB0ta4DKyGQ7eaZ2WXJiPBGd7gAxUmp-YoFyC0afpTgYeGqOXjP0Q9WCdnPhYEb9qFIujsuD7i6YaeYVOyyQ6Zexdtd2DRDLzMB1IIjyNbdw1TS2A_fCZipNAWyhXhFq9LAX_Ofn06Q9kQ3sENl7TqWAWUhHZv9kc_u39eLigdVptUr8"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="rounded-full bg-white p-2 text-slate-900 shadow-sm">
+<span class="material-symbols-outlined block">edit</span>
+</button>
+</div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400">Última edición: "Amanecer en el Amazonas" - hace 2 horas</p>
+</div>
+<div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-800 dark:ring-slate-700 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white">Galería / Experiencias destacadas</h4>
+<button class="text-primary hover:opacity-80 text-xs font-medium">Subir</button>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="aspect-square rounded-lg bg-slate-100 relative overflow-hidden group">
+<img alt="Food" class="h-full w-full object-cover" data-alt="Gourmet dish presentation on plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUvEuxmevjXBX3YTH_twa4mJf8Br8F294ph-T7UIzx51iwhdF4_idbO3-FlKJWrz_ecy3aQBb_mRHnzSY2sSzUY5A3x51CPm_cwTbsaEprLv2OMr3ugqcjFG72Q9jpB69nDZHVepu_UI-7HFASsKfvY6vKXlDVjWR5HAzYhTvgFx-l_KWI3-gztvRf5HbkB1HbYOQOabBk-52pQjAHcw5cBQBJGqD9dJTayVRMa9Ro1kXROX0VY-ZI12cetQ5M97PdnVPWBNYPl5k"/>
+</div>
+<div class="aspect-square rounded-lg bg-slate-100 relative overflow-hidden group">
+<img alt="Drink" class="h-full w-full object-cover" data-alt="Colorful cocktail drink on table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2YF8VRnW-TlkXLn01ZNIWV84lyl1ZpFrGoEPsLw63UVoMXsUxhKp5T1adsgq2FQi62YCC1RQv7AqRvfBgQhOwuxcX-1kgOc00ecOQXyLUfdoRAdi6hqVsrSgR4oaeb5uHM-p1IfjCs6JWc1h9-aVkUONov4B4pZKPgDI_i_VDFliYFBQWAHsEi_bniYQCCBViY8Jo4ppdE6FUUTmCgy3JcKGpdHIB88s4ovp4b4hte-7rVGJhSRsMBSlj_8S6QGB8pyd4oZaY0QY"/>
+</div>
+</div>
+<button class="w-full rounded-lg border border-slate-200 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700">
+                            Actualizar Menú Digital
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

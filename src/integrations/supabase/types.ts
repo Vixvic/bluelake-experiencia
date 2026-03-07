@@ -263,6 +263,8 @@ export type Database = {
           title_es: string
           updated_at: string
           visible: boolean | null
+          is_season_featured: boolean | null
+          video_url: string | null
         }
         Insert: {
           base_price?: number
@@ -285,28 +287,31 @@ export type Database = {
           title_es: string
           updated_at?: string
           visible?: boolean | null
+          is_season_featured?: boolean | null
+          video_url?: string | null
         }
         Update: {
           base_price?: number
-          category?: string
+          category?: string | null
           child_price?: number | null
           created_at?: string
-          current_bookings?: number
+          current_bookings?: number | null
           description_en?: string | null
           description_es?: string | null
-          dynamic_pricing?: boolean | null
           id?: string
           image_url?: string | null
           images?: string[] | null
-          max_capacity?: number
+          max_capacity?: number | null
           premium?: boolean | null
-          requires_quote?: boolean | null
-          season?: string
+          require_quote?: boolean | null
+          season?: string | null
           slug?: string
-          title_en?: string
-          title_es?: string
+          title_en?: string | null
+          title_es?: string | null
           updated_at?: string
           visible?: boolean | null
+          is_season_featured?: boolean | null
+          video_url?: string | null
         }
         Relationships: []
       }

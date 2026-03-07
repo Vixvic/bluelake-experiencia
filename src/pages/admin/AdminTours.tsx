@@ -32,6 +32,8 @@ interface Tour {
   current_bookings: number;
   image_url: string;
   images: string[];
+  is_season_featured: boolean;
+  video_url: string;
 }
 
 const defaultTour: Partial<Tour> = {
@@ -49,6 +51,8 @@ const defaultTour: Partial<Tour> = {
   current_bookings: 0,
   image_url: '',
   images: [],
+  is_season_featured: false,
+  video_url: '',
 };
 
 const AdminTours: React.FC = () => {
@@ -93,7 +97,7 @@ const AdminTours: React.FC = () => {
   }, [editingTour, isNewTour]);
 
   const fetchTours = () => {
-    supabase.from('tours').select('id,slug,title_es,title_en,description_es,description_en,category,season,base_price,max_capacity,premium,visible,current_bookings,image_url,images')
+    supabase.from('tours').select('id,slug,title_es,title_en,description_es,description_en,category,season,base_price,max_capacity,premium,visible,current_bookings,image_url,images,is_season_featured,video_url')
       .order('created_at', { ascending: false })
       .then(({ data }) => { setTours(data || []); setLoading(false); });
   };
@@ -282,6 +286,8 @@ const AdminTours: React.FC = () => {
         visible: editingTour.visible ?? true,
         image_url: editingTour.image_url,
         images: editingTour.images || [],
+        is_season_featured: editingTour.is_season_featured || false,
+        video_url: editingTour.video_url || '',
       });
       error = result.error;
     } else {
@@ -298,6 +304,8 @@ const AdminTours: React.FC = () => {
         premium: editingTour.premium,
         image_url: editingTour.image_url,
         images: editingTour.images || [],
+        is_season_featured: editingTour.is_season_featured,
+        video_url: editingTour.video_url,
       }).eq('id', editingTour.id);
       error = result.error;
     }
@@ -670,6 +678,34 @@ const AdminTours: React.FC = () => {
                   className="w-4 h-4 text-accent-orange rounded border-border"
                 />
                 <label htmlFor="premium-tour" className="text-sm font-medium flex items-center gap-1.5"><Star className="w-3.5 h-3.5 fill-accent-orange text-accent-orange" /> Destacar como experiencia Premium</label>
+              </div>
+
+              <div className="border-t border-border pt-4 mt-4">
+                <h3 className="text-sm font-bold text-foreground mb-3">Configuración Cinematográfica</h3>
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    type="checkbox"
+                    id="season-featured-tour"
+                    checked={editingTour.is_season_featured || false}
+                    onChange={e => setEditingTour({ ...editingTour, is_season_featured: e.target.checked })}
+                    className="w-4 h-4 text-primary rounded border-border"
+                  />
+                  <label htmlFor="season-featured-tour" className="text-sm font-medium flex items-center gap-1.5">
+                    Destacar como Experiencia Principal de Temporada
+                  </label>
+                </div>
+                {editingTour.is_season_featured && (
+                  <div>
+                    <label className="text-sm font-semibold mb-1 block">URL del Video de Fondo (MP4 o YouTube)</label>
+                    <Input
+                      type="url"
+                      placeholder="https://ejemplo.com/video.mp4"
+                      value={editingTour.video_url || ''}
+                      onChange={e => setEditingTour({ ...editingTour, video_url: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Este video se reproducirá en pantalla completa al seleccionar la temporada.</p>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 flex justify-end gap-3 mt-4 border-t border-border">
