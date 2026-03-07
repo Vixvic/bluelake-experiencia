@@ -22,6 +22,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import ClientLogin from "./pages/client/ClientLogin";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientProfile from "./pages/client/ClientProfile";
+import { ReturnToAdminBanner } from "@/components/shared/ReturnToAdminBanner";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,8 @@ const App = () => (
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              {/* Banner global de previsualización para administradores */}
+              <ReturnToAdminBanner />
             </SeasonalProvider>
           </CurrencyProvider>
         </AuthProvider>

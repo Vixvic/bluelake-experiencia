@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Snowflake, Sun, Settings, Zap } from 'lucide-react';
+import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
 
 interface SeasonConfig {
   id: string;
@@ -36,7 +37,10 @@ const AdminSeasons: React.FC = () => {
 
   return (
     <div className="p-8 max-w-2xl">
-      <h1 className="text-2xl font-bold text-foreground mb-8">Gestión de Temporadas</h1>
+      <div className="flex items-center justify-between mb-8 gap-4">
+        <h1 className="text-2xl font-bold text-foreground">Gestión de Temporadas</h1>
+        <ViewLiveSiteButton />
+      </div>
 
       {/* Current status */}
       <div className={`rounded-2xl p-6 mb-6 flex items-center gap-4 ${activeSeason === 'summer' ? 'bg-accent-orange/10 border border-accent-orange/30' : 'bg-primary/10 border border-primary/30'}`}>

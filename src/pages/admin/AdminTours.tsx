@@ -15,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
 
 interface Tour {
   id: string;
@@ -382,6 +383,7 @@ const AdminTours: React.FC = () => {
           <p className="text-muted-foreground text-sm">Gestiona, edita y publica tus experiencias turísticas.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4">
+          <ViewLiveSiteButton />
           <div className="relative w-full sm:w-80">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Search className="w-4 h-4" />

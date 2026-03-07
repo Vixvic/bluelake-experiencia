@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Building2, CheckCircle2, MessageSquare } from 'lucide-react';
+import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
 
 interface CorporateRequest {
   id: string;
@@ -50,9 +51,12 @@ const AdminCorporate: React.FC = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-        <Building2 className="w-6 h-6 text-primary" /> Solicitudes Corporativas
-      </h1>
+      <div className="flex items-center justify-between mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Building2 className="w-6 h-6 text-primary" /> Solicitudes Corporativas
+        </h1>
+        <ViewLiveSiteButton />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* List */}
