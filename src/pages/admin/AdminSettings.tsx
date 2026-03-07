@@ -5,6 +5,7 @@ import { Plus, Trash2, Upload, Star, LayoutDashboard, ChevronRight, Loader2, Sav
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
 
 const AdminSettings: React.FC = () => {
     const [content, setContent] = useState<SiteContent | null>(null);
@@ -89,19 +90,22 @@ const AdminSettings: React.FC = () => {
 
     return (
         <div className="p-8 max-w-5xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">Ajustes de Inicio</h1>
                     <p className="text-sm text-muted-foreground">Gestiona el contenido visual de la página principal.</p>
                 </div>
-                <button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-lg disabled:opacity-50"
-                >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Guardar Proyecto
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <ViewLiveSiteButton />
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-lg disabled:opacity-50"
+                    >
+                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        Guardar Proyecto
+                    </button>
+                </div>
             </div>
 
             <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl mb-6 w-fit">

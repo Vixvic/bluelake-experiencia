@@ -53,7 +53,7 @@ export const ReturnToAdminBanner: React.FC = () => {
                     <XCircle className="w-4 h-4" />
                 </button>
             </div>
-            <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mr-2 bg-slate-900/60 px-2 py-0.5 rounded backdrop-blur-sm">
+            <div className="text-[10px] uppercase font-bold tracking-widest text-slate-800 mr-2 bg-white/90 border border-slate-200 shadow-sm px-2.5 py-0.5 rounded backdrop-blur-md">
                 Modo Previsualización Admin
             </div>
         </div>
