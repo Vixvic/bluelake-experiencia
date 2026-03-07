@@ -319,20 +319,102 @@ const AdminContenido: React.FC = () => {
                 </TabsContent>
 
                 <TabsContent value="blog">
-                    <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                        <p className="text-slate-500">Módulo de Blog de Sostenibilidad en desarrollo.</p>
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-800">Artículos del Blog</h2>
+                            <button className="flex items-center gap-2 px-4 py-2 bg-[#0055ff]/10 text-[#0055ff] hover:bg-[#0055ff]/20 font-medium rounded-lg transition-colors">
+                                <Plus className="w-4 h-4" /> Nuevo Artículo
+                            </button>
+                        </div>
+                        <div className="border border-slate-200 rounded-xl overflow-hidden">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                                    <tr>
+                                        <th className="px-4 py-3 font-medium">Título</th>
+                                        <th className="px-4 py-3 font-medium">Estado</th>
+                                        <th className="px-4 py-3 font-medium">Fecha</th>
+                                        <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    <tr className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-slate-800">Protección del Delfín Rosado</td>
+                                        <td className="px-4 py-3"><span className="px-2.5 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full border border-green-200">Publicado</span></td>
+                                        <td className="px-4 py-3 text-slate-500">12 Oct 2023</td>
+                                        <td className="px-4 py-3 text-right">
+                                            <button className="text-[#0055ff] hover:underline text-xs font-medium">Editar</button>
+                                        </td>
+                                    </tr>
+                                    <tr className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-4 py-3 font-medium text-slate-800">Reciclaje en Muelle 24</td>
+                                        <td className="px-4 py-3"><span className="px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">Borrador</span></td>
+                                        <td className="px-4 py-3 text-slate-500">05 Nov 2023</td>
+                                        <td className="px-4 py-3 text-right">
+                                            <button className="text-[#0055ff] hover:underline text-xs font-medium">Editar</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </TabsContent>
 
                 <TabsContent value="galeria">
-                    <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                        <p className="text-slate-500">Módulo de Galería en desarrollo.</p>
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-800">Banco de Imágenes Muelle 24</h2>
+                            <button className="flex items-center gap-2 px-4 py-2 bg-[#0055ff] text-white hover:bg-[#0044cc] font-medium rounded-lg transition-colors">
+                                <Upload className="w-4 h-4" /> Subir Fotos
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="group relative aspect-[4/5] rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
+                                    <img src={`https://images.unsplash.com/photo-1542281286-9e0a16bb7366?w=400&q=80&sig=${i}`} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                        <button className="p-2 bg-white text-red-600 rounded-full hover:bg-red-50 hover:scale-105 transition-all shadow-sm">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 hover:border-[#0055ff]/50 hover:bg-[#0055ff]/5 transition-colors flex flex-col items-center justify-center text-slate-500 cursor-pointer">
+                                <Plus className="w-8 h-8 mb-2 text-slate-400" />
+                                <span className="text-xs font-medium">Añadir más</span>
+                            </div>
+                        </div>
                     </div>
                 </TabsContent>
 
                 <TabsContent value="seo">
-                    <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                        <p className="text-slate-500">Módulo de configuración de Metadatos en desarrollo.</p>
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6 max-w-3xl">
+                        <div className="border-b border-slate-100 pb-4">
+                            <h2 className="text-xl font-bold text-slate-800">Ajustes Globales de SEO</h2>
+                            <p className="text-sm text-slate-500 mt-1">Configura cómo aparece tu sitio en Google y redes sociales.</p>
+                        </div>
+                        <div className="space-y-5">
+                            <div>
+                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Meta Título Global</label>
+                                <Input defaultValue="Bluelake Experiencia - Turismo en la Selva Peruana" className="bg-slate-50 border-slate-200" />
+                                <p className="text-xs text-slate-500 mt-1.5">Ideal: 50-60 caracteres.</p>
+                            </div>
+                            <div>
+                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Meta Descripción</label>
+                                <Textarea rows={3} defaultValue="Descubre la selva peruana de forma exclusiva. Deportes acuáticos, pesca, relax y aventuras únicas con guías expertos." className="bg-slate-50 border-slate-200 resize-none" />
+                                <p className="text-xs text-slate-500 mt-1.5">Aparecerá debado del título en los resultados de búsqueda.</p>
+                            </div>
+                            <div>
+                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Imagen para Redes Sociales (OG Image)</label>
+                                <div className="flex gap-4 items-center">
+                                    <div className="w-32 h-20 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden">
+                                        <img src="https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=400" className="w-full h-full object-cover" />
+                                    </div>
+                                    <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                                        Cambiar Imagen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </TabsContent>
             </Tabs>
