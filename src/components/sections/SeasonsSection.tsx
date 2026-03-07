@@ -110,8 +110,8 @@ const SeasonsSection: React.FC = () => {
               <button
                 onClick={() => setSelectedSeason('winter')}
                 className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${selectedSeason === 'winter'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
                 {t('seasons.winter.name')}
@@ -119,8 +119,8 @@ const SeasonsSection: React.FC = () => {
               <button
                 onClick={() => setSelectedSeason('summer')}
                 className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${selectedSeason === 'summer'
-                    ? 'bg-accent-orange text-white shadow-lg shadow-orange-900/40'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                  ? 'bg-accent-orange text-white shadow-lg shadow-orange-900/40'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                   }`}
               >
                 {t('seasons.summer.name')}
@@ -216,7 +216,6 @@ const SeasonsSection: React.FC = () => {
                         className="flex items-center gap-2.5 px-6 md:px-8 py-3 bg-white text-slate-900 rounded-lg font-bold text-sm md:text-base hover:bg-slate-200 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                       >
                         <Play className="w-5 h-5 fill-slate-900" />
-                        {t('experiences.bookNow') /* Usando Book Now en lugar de Reproducir o personalizamos? Ojo que esto es vista */}
                         Reproducir
                       </button>
 
@@ -265,22 +264,22 @@ const SeasonsSection: React.FC = () => {
 
       {/* Video Modal (Reproductor Inmersivo) */}
       <Dialog open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen}>
-        <DialogContent className="max-w-[1200px] w-[95vw] h-[80vh] p-0 bg-black border-none overflow-hidden rounded-2xl shadow-2xl">
+        <DialogContent className="max-w-[1200px] w-[95vw] max-h-[90vh] p-0 bg-black border-none overflow-hidden rounded-2xl shadow-2xl flex flex-col justify-center">
           <DialogTitle className="sr-only">Reproductor de Video</DialogTitle>
           {featuredTour && isVideoModalOpen && (
-            <div className="relative w-full h-full bg-black group">
+            <div className="relative w-full h-full max-h-[90vh] bg-black group aspect-video flex items-center justify-center">
               {isYoutube ? (
                 <iframe
                   src={`https://www.youtube.com/embed/${ytId}?autoplay=1&controls=1&rel=0`}
                   title="Video Trailer"
-                  className="w-full h-full"
+                  className="w-full h-full rounded-2xl"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                   allowFullScreen
                 />
               ) : (
                 <video
                   src={featuredTour.video_url}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain max-h-[90vh] rounded-2xl"
                   controls
                   autoPlay
                   preload="auto"
