@@ -74,6 +74,7 @@ const AdminTours: React.FC = () => {
   // Referencias para disparar los inputs de archivo de manera robusta
   const coverInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   // Recuperar borrador si el usuario recargó accidentalmente la página
   useEffect(() => {
@@ -253,6 +254,44 @@ const AdminTours: React.FC = () => {
       toast.error('Error subiendo galería: ' + error.message);
     } finally {
       e.target.value = ''; // Reset value
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (file.size > 50 * 1024 * 1024) { // 50MB limit
+        toast.error('El video es demasiado pesado. El límite es 50MB.');
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `video_${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      toast.info('Subiendo video, esto puede tardar un momento...');
+
+      // Usaremos el mismo bucket 'tour-images' ya que funciona como un bucket público general en Supabase si no está restringido por MIME type.
+      const { error: uploadError } = await supabase.storage
+        .from('tour-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('tour-images')
+        .getPublicUrl(filePath);
+
+      setEditingTour(prev => prev ? { ...prev, video_url: publicUrl } : null);
+      toast.success('Video subido correctamente');
+    } catch (error: any) {
+      toast.error('Error subiendo video: ' + error.message);
+    } finally {
+      e.target.value = ''; // Reset to allow re-upload of same file
     }
   };
 
@@ -696,14 +735,34 @@ const AdminTours: React.FC = () => {
                 </div>
                 {editingTour.is_season_featured && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block">URL del Video de Fondo (MP4 o YouTube)</label>
-                    <Input
-                      type="url"
-                      placeholder="https://ejemplo.com/video.mp4"
-                      value={editingTour.video_url || ''}
-                      onChange={e => setEditingTour({ ...editingTour, video_url: e.target.value })}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Este video se reproducirá en pantalla completa al seleccionar la temporada.</p>
+                    <label className="text-sm font-semibold mb-1 block">Video de Fondo (Subir MP4 o enlazar YouTube)</label>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="url"
+                        placeholder="https://ejemplo.com/video.mp4 o YouTube"
+                        value={editingTour.video_url || ''}
+                        onChange={e => setEditingTour({ ...editingTour, video_url: e.target.value })}
+                        className="flex-1"
+                      />
+                      <input
+                        type="file"
+                        ref={videoInputRef}
+                        accept="video/mp4,video/webm,video/quicktime"
+                        onChange={handleVideoUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => videoInputRef.current?.click()}
+                        className="flex items-center justify-center gap-2 px-4 h-10 bg-secondary hover:bg-secondary/80 text-foreground text-sm font-semibold rounded-md transition-colors cursor-pointer border border-border shrink-0"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Subir MP4
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+                      Sube un video corto (recomendado &lt; 20MB) o pega una URL. Este video se reproducirá en pantalla completa silenciado al seleccionar la temporada.
+                    </p>
                   </div>
                 )}
               </div>
