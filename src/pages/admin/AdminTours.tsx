@@ -760,8 +760,10 @@ const AdminTours: React.FC = () => {
                         Subir MP4
                       </button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
-                      Sube un video corto (recomendado &lt; 20MB) o pega una URL. Este video se reproducirá en pantalla completa silenciado al seleccionar la temporada.
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      Sube un video corto (límite 50MB) o pega una URL de YouTube. Este video se reproducirá en pantalla completa silenciado al seleccionar la temporada.
+                      <br className="hidden sm:block" />
+                      <span className="font-medium text-primary mt-1 inline-block">Dimensiones sugeridas: 1920x1080 píxeles (formato horizontal 16:9)</span> para una visualización óptima en calidad cinematográfica.
                     </p>
                   </div>
                 )}
