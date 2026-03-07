@@ -84,7 +84,10 @@ const resources = {
           'premium': 'Experiencias Premium',
           'full-days': 'Tours Full Day',
           'acuaticas': 'Deportes Acuáticos',
-          'naturaleza': 'Naturaleza y Cultura',
+          'naturaleza': 'Naturaleza', /* Updated to separate Naturaleza y Cultura */
+          'aventura': 'Aventura',
+          'cultura': 'Cultura',
+          'actividades-acuaticas': 'Actividades Acuáticas',
         },
       },
       // Muelle 24
@@ -290,7 +293,10 @@ const resources = {
           'premium': 'Premium Experiences',
           'full-days': 'Full Day Tours',
           'acuaticas': 'Water Sports',
-          'naturaleza': 'Nature & Culture',
+          'naturaleza': 'Nature',
+          'aventura': 'Adventure',
+          'cultura': 'Culture',
+          'actividades-acuaticas': 'Water Activities',
         },
       },
       pier24: {
