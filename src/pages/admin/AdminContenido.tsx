@@ -16,6 +16,9 @@ const AdminContenido: React.FC = () => {
     const featuredInputRef = useRef<HTMLInputElement>(null);
     const [uploadingHeroIndex, setUploadingHeroIndex] = useState<number | null>(null);
 
+    // Estado para la vista previa del carrusel móvil
+    const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
+
     useEffect(() => {
         siteContentService.getContent().then(data => {
             setContent(data);
@@ -88,7 +91,10 @@ const AdminContenido: React.FC = () => {
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
     if (!content) return null;
 
-    const mainSlide: Partial<HeroSlide> = content.heroSlides[0] || {
+    // Controlar índice de vista previa en caso de que se elimine un slide
+    const safePreviewIndex = Math.min(currentPreviewIndex, Math.max(0, content.heroSlides.length - 1));
+
+    const previewSlide: Partial<HeroSlide> = content.heroSlides[safePreviewIndex] || {
         title_es: '',
         image_url: '',
         video_url: '',
@@ -261,6 +267,14 @@ const AdminContenido: React.FC = () => {
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
+
+                                                <button
+                                                    onClick={() => setCurrentPreviewIndex(index)}
+                                                    className={`p-2 rounded-lg self-center flex flex-col items-center justify-center transition-colors ${safePreviewIndex === index ? 'bg-[#0055ff]/10 text-[#0055ff]' : 'text-slate-400 hover:bg-slate-50'}`}
+                                                    title="Previsualizar este Slide"
+                                                >
+                                                    <Star className="w-4 h-4" />
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
@@ -320,23 +334,37 @@ const AdminContenido: React.FC = () => {
                                         <div className="absolute inset-0 bg-white flex flex-col">
                                             {/* Hero Image / Video */}
                                             <div className="relative h-[280px] w-full bg-slate-200">
-                                                {mainSlide.video_url ? (
-                                                    <video src={mainSlide.video_url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-                                                ) : mainSlide.image_url ? (
-                                                    <img src={mainSlide.image_url} className="w-full h-full object-cover" />
-                                                ) : null}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>
-                                                <div className="absolute inset-0 flex flex-col justify-end p-6 pb-8 text-center items-center">
-                                                    <div className="text-white/80 text-[10px] uppercase tracking-widest font-semibold mb-2">Bluelake</div>
-                                                    <h3 className="text-white text-2xl font-black leading-tight mb-2 drop-shadow-md">
-                                                        {mainSlide.title_es || 'Título Principal'}
-                                                    </h3>
-                                                    {mainSlide.subtitle_es && (
-                                                        <p className="text-white/80 text-xs line-clamp-2 max-w-[200px]">
-                                                            {mainSlide.subtitle_es}
-                                                        </p>
-                                                    )}
+                                                <div key={safePreviewIndex} className="absolute inset-0 animate-in fade-in duration-500">
+                                                    {previewSlide.video_url ? (
+                                                        <video src={previewSlide.video_url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                                                    ) : previewSlide.image_url ? (
+                                                        <img src={previewSlide.image_url} className="w-full h-full object-cover" />
+                                                    ) : null}
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>
+                                                    <div className="absolute inset-0 flex flex-col justify-end p-6 pb-8 text-center items-center">
+                                                        <div className="text-white/80 text-[10px] uppercase tracking-widest font-semibold mb-2">Bluelake</div>
+                                                        <h3 className="text-white text-2xl font-black leading-tight mb-2 drop-shadow-md">
+                                                            {previewSlide.title_es || 'Título Principal'}
+                                                        </h3>
+                                                        {previewSlide.subtitle_es && (
+                                                            <p className="text-white/80 text-xs line-clamp-2 max-w-[200px]">
+                                                                {previewSlide.subtitle_es}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                                {/* Navigation Dots */}
+                                                {content.heroSlides.length > 1 && (
+                                                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+                                                        {content.heroSlides.map((_, idx) => (
+                                                            <button
+                                                                key={idx}
+                                                                onClick={() => setCurrentPreviewIndex(idx)}
+                                                                className={`w-1.5 h-1.5 rounded-full transition-all ${idx === safePreviewIndex ? 'bg-white w-3' : 'bg-white/50 hover:bg-white/80'}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                             {/* Fake Content Below */}
                                             <div className="p-6 space-y-4">
