@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
-import { Save, Loader2, Upload, Trash2, Smartphone, Plus } from 'lucide-react';
+import { Save, Loader2, Upload, Trash2, Smartphone, Plus, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { siteContentService, SiteContent, HeroSlide } from '@/services/siteContentService';
+import { siteContentService, SiteContent, HeroSlide, FeaturedEvent } from '@/services/siteContentService';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -13,6 +13,8 @@ const AdminContenido: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const heroInputRef = useRef<HTMLInputElement>(null);
+    const featuredInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingHeroIndex, setUploadingHeroIndex] = useState<number | null>(null);
 
     useEffect(() => {
         siteContentService.getContent().then(data => {
@@ -34,10 +36,7 @@ const AdminContenido: React.FC = () => {
         }
     };
 
-    const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || !content) return;
-
+    const handleFileUpload = async (file: File, type: 'hero' | 'featured', index?: number) => {
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
@@ -55,38 +54,34 @@ const AdminContenido: React.FC = () => {
                 .from('tour-images')
                 .getPublicUrl(filePath);
 
-            const newSlides = [...content.heroSlides];
-            const slideTemplate = {
-                id: Date.now().toString(),
-                image_url: '',
-                video_url: '',
-                title_es: '',
-                title_en: '',
-                subtitle_es: '',
-                subtitle_en: '',
-                order: 0
-            };
-
-            if (newSlides.length === 0) {
-                newSlides.push(slideTemplate);
+            if (type === 'hero' && index !== undefined && content) {
+                const newSlides = [...content.heroSlides];
+                if (fileExt?.toLowerCase() === 'mp4') {
+                    newSlides[index].video_url = publicUrl;
+                    newSlides[index].image_url = '';
+                } else {
+                    newSlides[index].image_url = publicUrl;
+                    newSlides[index].video_url = '';
+                }
+                setContent({ ...content, heroSlides: newSlides });
+            } else if (type === 'featured' && content) {
+                const currentImages = content.featuredEvent.images || [];
+                if (currentImages.length >= 5) {
+                    toast.error('Máximo 5 imágenes permitidas', { id: 'upload' });
+                    return;
+                }
+                setContent({
+                    ...content,
+                    featuredEvent: {
+                        ...content.featuredEvent,
+                        images: [...currentImages, publicUrl]
+                    }
+                });
             }
 
-            if (fileExt?.toLowerCase() === 'mp4') {
-                newSlides[0].video_url = publicUrl;
-                // Opcional: limpiar la imagen si sube video
-                // newSlides[0].image_url = ''; 
-            } else {
-                newSlides[0].image_url = publicUrl;
-                // Opcional: limpiar video si sube imagen
-                // newSlides[0].video_url = ''; 
-            }
-
-            setContent({ ...content, heroSlides: newSlides });
             toast.success('Archivo subido con éxito', { id: 'upload' });
         } catch (error: any) {
             toast.error('Error subiendo archivo: ' + error.message, { id: 'upload' });
-        } finally {
-            if (heroInputRef.current) heroInputRef.current.value = '';
         }
     };
 
@@ -142,100 +137,167 @@ const AdminContenido: React.FC = () => {
                         {/* Editor Column */}
                         <div className="lg:col-span-2 space-y-6">
 
-                            {/* Hero Card */}
+                            {/* Hero Carousel Card */}
                             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-slate-800">Hero Section</h2>
-                                    <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full border border-green-200">Publicado</span>
+                                    <h2 className="text-lg font-bold text-slate-800">Carrusel Principal (Hero)</h2>
+                                    <button
+                                        onClick={() => {
+                                            const newSlide: HeroSlide = {
+                                                id: Date.now().toString(),
+                                                image_url: '',
+                                                video_url: '',
+                                                title_es: 'Nueva Diapositiva',
+                                                title_en: 'New Slide',
+                                                subtitle_es: '',
+                                                subtitle_en: '',
+                                                order: content.heroSlides.length
+                                            };
+                                            setContent({ ...content, heroSlides: [...content.heroSlides, newSlide] });
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-[#0055ff]/10 text-[#0055ff] hover:bg-[#0055ff]/20 text-xs font-semibold rounded-lg transition-colors"
+                                    >
+                                        <Plus className="w-4 h-4" /> Agregar Slide
+                                    </button>
                                 </div>
-                                <div className="p-6 space-y-5">
-                                    <div>
-                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Título Principal</label>
-                                        <Input
-                                            value={mainSlide.title_es}
-                                            onChange={(e) => {
-                                                const newSlides = [...content.heroSlides];
-                                                if (newSlides.length > 0) {
-                                                    newSlides[0].title_es = e.target.value;
-                                                    setContent({ ...content, heroSlides: newSlides });
-                                                }
-                                            }}
-                                            className="bg-white border-slate-200 focus-visible:ring-[#0055ff]"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Subtítulo</label>
-                                        <Textarea
-                                            rows={3}
-                                            value={mainSlide.subtitle_es || ''}
-                                            onChange={(e) => {
-                                                const newSlides = [...content.heroSlides];
-                                                if (newSlides.length > 0) {
-                                                    newSlides[0].subtitle_es = e.target.value;
-                                                    setContent({ ...content, heroSlides: newSlides });
-                                                }
-                                            }}
-                                            placeholder="Experiencias inolvidables..."
-                                            className="bg-white border-slate-200 focus-visible:ring-[#0055ff] resize-none"
-                                        />
+                                <div className="p-6 space-y-4">
+                                    <p className="text-xs text-slate-500 mb-4">
+                                        Dimensiones sugeridas <span className="font-semibold text-slate-700">1920 × 1080 px</span>. PNG, JPG o MP4 hasta 50MB. El primer slide se muestra en la vista previa.
+                                    </p>
+
+                                    <div className="grid gap-4 max-h-[600px] overflow-y-auto pr-2">
+                                        {content.heroSlides.map((slide, index) => (
+                                            <div key={slide.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex gap-4 items-start relative group">
+                                                <div className="w-40 h-24 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200 group-hover:border-[#0055ff]/50 transition-colors relative">
+                                                    {slide.video_url ? (
+                                                        <video src={slide.video_url} className="w-full h-full object-cover opacity-50 bg-slate-900" />
+                                                    ) : slide.image_url ? (
+                                                        <img src={slide.image_url} className="w-full h-full object-cover" alt="Slide" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                            <ImageIcon className="w-8 h-8 opacity-20" />
+                                                        </div>
+                                                    )}
+
+                                                    {/* Badge de tipo */}
+                                                    {(slide.image_url || slide.video_url) && (
+                                                        <div className="absolute top-1 left-1">
+                                                            <span className="text-[9px] font-bold text-white bg-slate-900/80 px-1.5 py-0.5 rounded shadow-sm">
+                                                                {slide.video_url ? 'MP4' : 'IMG'}
+                                                            </span>
+                                                        </div>
+                                                    )}
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setUploadingHeroIndex(index);
+                                                            heroInputRef.current?.click();
+                                                        }}
+                                                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                                                    >
+                                                        <Upload className="text-white w-6 h-6" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Título (ES)</label>
+                                                        <Input
+                                                            value={slide.title_es}
+                                                            onChange={e => {
+                                                                const newSlides = [...content.heroSlides];
+                                                                newSlides[index].title_es = e.target.value;
+                                                                setContent({ ...content, heroSlides: newSlides });
+                                                            }}
+                                                            className="h-8 text-sm bg-white"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Título (EN)</label>
+                                                        <Input
+                                                            value={slide.title_en}
+                                                            onChange={e => {
+                                                                const newSlides = [...content.heroSlides];
+                                                                newSlides[index].title_en = e.target.value;
+                                                                setContent({ ...content, heroSlides: newSlides });
+                                                            }}
+                                                            className="h-8 text-sm bg-white"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Subtítulo (ES)</label>
+                                                        <Input
+                                                            value={slide.subtitle_es || ''}
+                                                            onChange={e => {
+                                                                const newSlides = [...content.heroSlides];
+                                                                newSlides[index].subtitle_es = e.target.value;
+                                                                setContent({ ...content, heroSlides: newSlides });
+                                                            }}
+                                                            className="h-8 text-sm bg-white"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Subtítulo (EN)</label>
+                                                        <Input
+                                                            value={slide.subtitle_en || ''}
+                                                            onChange={e => {
+                                                                const newSlides = [...content.heroSlides];
+                                                                newSlides[index].subtitle_en = e.target.value;
+                                                                setContent({ ...content, heroSlides: newSlides });
+                                                            }}
+                                                            className="h-8 text-sm bg-white"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={() => {
+                                                        const newSlides = content.heroSlides.filter((_, i) => i !== index);
+                                                        setContent({ ...content, heroSlides: newSlides });
+                                                    }}
+                                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg self-center"
+                                                    title="Eliminar Slide"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    <div>
-                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Multimedia de Fondo (Video/Imagen)</label>
-                                        <div
-                                            onClick={() => heroInputRef.current?.click()}
-                                            className="border-2 border-dashed border-slate-200 rounded-xl p-8 hover:border-[#0055ff]/50 hover:bg-[#0055ff]/5 transition-colors cursor-pointer text-center group"
-                                        >
-                                            <div className="w-12 h-12 bg-slate-100 text-slate-400 group-hover:text-[#0055ff] group-hover:bg-[#0055ff]/10 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors">
-                                                <Upload className="w-6 h-6" />
-                                            </div>
-                                            <p className="text-sm font-medium text-slate-700 mb-1">
-                                                <span className="text-[#0055ff]">Sube un archivo</span> o arrastra y suelta
-                                            </p>
-                                            <p className="text-xs text-slate-500">PNG, JPG, MP4 hasta 50MB</p>
-                                        </div>
-                                        <input
-                                            type="file"
-                                            ref={heroInputRef}
-                                            onChange={handleHeroUpload}
-                                            className="hidden"
-                                            accept="image/*,video/mp4"
-                                        />
-
-                                        {/* Thumbnails */}
-                                        {(mainSlide.image_url || mainSlide.video_url) && (
-                                            <div className="flex gap-3 mt-4">
-                                                {mainSlide.image_url && (
-                                                    <div className="relative w-24 h-16 rounded-lg border-2 border-[#0055ff] overflow-hidden group">
-                                                        <img src={mainSlide.image_url} className="w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-[#0055ff]/20 flex items-center justify-center">
-                                                            <div className="text-xs font-bold text-white uppercase bg-[#0055ff]/80 px-2 rounded">IMG</div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {mainSlide.video_url && (
-                                                    <div className="relative w-24 h-16 rounded-lg border-2 border-[#0055ff] overflow-hidden group bg-slate-900 border-dashed">
-                                                        <video src={mainSlide.video_url} className="w-full h-full object-cover opacity-50" />
-                                                        <div className="absolute inset-0 flex items-center justify-center">
-                                                            <div className="text-xs font-bold text-white uppercase bg-[#0055ff]/80 px-2 rounded">MP4</div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
+                                    {/* Input oculto centralizado para Hero */}
+                                    <input
+                                        type="file"
+                                        ref={heroInputRef}
+                                        className="hidden"
+                                        accept="image/*,video/mp4"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file && uploadingHeroIndex !== null) {
+                                                handleFileUpload(file, 'hero', uploadingHeroIndex).finally(() => {
+                                                    e.target.value = '';
+                                                    setUploadingHeroIndex(null);
+                                                });
+                                            }
+                                        }}
+                                    />
                                 </div>
                             </div>
 
                             {/* User Stories */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100">
-                                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-slate-800">Historias de Usuarios</h2>
-                                    <button className="text-sm font-medium text-[#0055ff] hover:underline">Ver historial</button>
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 relative">
+                                <div className="absolute inset-0 bg-slate-50/50 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                                    <span className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm">
+                                        Próximo a implementarse
+                                    </span>
                                 </div>
-                                <div className="p-6">
+                                <div className="p-5 border-b border-slate-100 flex items-center justify-between opacity-50">
+                                    <h2 className="text-lg font-bold text-slate-800">Historias de Usuarios</h2>
+                                    <button className="text-sm font-medium text-[#0055ff] hover:underline" disabled>Ver historial</button>
+                                </div>
+                                <div className="p-6 opacity-50">
                                     <label className="text-sm font-semibold text-slate-700 mb-2 block">Seleccionar Historia para Editar</label>
-                                    <select className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0055ff] disabled:cursor-not-allowed disabled:opacity-50">
+                                    <select disabled className="flex h-10 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0055ff] disabled:cursor-not-allowed disabled:opacity-50">
                                         <option>Amanecer en el Amazonas - Juan Pérez</option>
                                     </select>
                                 </div>
@@ -361,27 +423,136 @@ const AdminContenido: React.FC = () => {
 
                 <TabsContent value="galeria">
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-slate-800">Banco de Imágenes Muelle 24</h2>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-[#0055ff] text-white hover:bg-[#0044cc] font-medium rounded-lg transition-colors">
-                                <Upload className="w-4 h-4" /> Subir Fotos
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="group relative aspect-[4/5] rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
-                                    <img src={`https://images.unsplash.com/photo-1542281286-9e0a16bb7366?w=400&q=80&sig=${i}`} className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                        <button className="p-2 bg-white text-red-600 rounded-full hover:bg-red-50 hover:scale-105 transition-all shadow-sm">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            <div className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 hover:border-[#0055ff]/50 hover:bg-[#0055ff]/5 transition-colors flex flex-col items-center justify-center text-slate-500 cursor-pointer">
-                                <Plus className="w-8 h-8 mb-2 text-slate-400" />
-                                <span className="text-xs font-medium">Añadir más</span>
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800">Muelle 24 (Experiencia Destacada)</h2>
+                                <p className="text-sm text-slate-500 mt-1">Configura la información y galería de la experiencia destacada en la página principal.</p>
                             </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm font-semibold text-slate-700">Mostrar en Web</span>
+                                <input
+                                    type="checkbox"
+                                    checked={content.featuredEvent?.active || false}
+                                    onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, active: e.target.checked } })}
+                                    className="w-5 h-5 text-[#0055ff] rounded border-slate-300 focus:ring-[#0055ff]"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Título Principal (ES)</label>
+                                    <Input
+                                        value={content.featuredEvent?.title_es || ''}
+                                        onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, title_es: e.target.value } })}
+                                        className="bg-slate-50 border-slate-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Subtítulo (ES)</label>
+                                    <Input
+                                        value={content.featuredEvent?.subtitle_es || ''}
+                                        onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, subtitle_es: e.target.value } })}
+                                        className="bg-slate-50 border-slate-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Descripción (ES)</label>
+                                    <Textarea
+                                        rows={4}
+                                        value={content.featuredEvent?.description_es || ''}
+                                        onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, description_es: e.target.value } })}
+                                        className="bg-slate-50 border-slate-200 resize-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Título Principal (EN)</label>
+                                    <Input
+                                        value={content.featuredEvent?.title_en || ''}
+                                        onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, title_en: e.target.value } })}
+                                        className="bg-slate-50 border-slate-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Subtítulo (EN)</label>
+                                    <Input
+                                        value={content.featuredEvent?.subtitle_en || ''}
+                                        onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, subtitle_en: e.target.value } })}
+                                        className="bg-slate-50 border-slate-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-700 mb-2 block">Descripción (EN)</label>
+                                    <Textarea
+                                        rows={4}
+                                        value={content.featuredEvent?.description_en || ''}
+                                        onChange={e => setContent({ ...content, featuredEvent: { ...content.featuredEvent, description_en: e.target.value } })}
+                                        className="bg-slate-50 border-slate-200 resize-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-800">Galería de Imágenes (Máx 5)</h3>
+                                    <p className="text-xs text-slate-500">Imágenes que se mostrarán en la experiencia de Muelle 24.</p>
+                                </div>
+                                {(!content.featuredEvent?.images || content.featuredEvent.images.length < 5) && (
+                                    <button
+                                        onClick={() => featuredInputRef.current?.click()}
+                                        className="flex items-center gap-2 px-4 py-2 bg-[#0055ff] text-white hover:bg-[#0044cc] font-medium rounded-lg transition-colors text-sm"
+                                    >
+                                        <Upload className="w-4 h-4" /> Subir Fotos
+                                    </button>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {(content.featuredEvent?.images || []).map((img, index) => (
+                                    <div key={index} className="group relative aspect-[4/5] rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
+                                        <img src={img} className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                            <button
+                                                onClick={() => {
+                                                    const newImages = content.featuredEvent.images.filter((_, i) => i !== index);
+                                                    setContent({ ...content, featuredEvent: { ...content.featuredEvent, images: newImages } });
+                                                }}
+                                                className="p-2 bg-white text-red-600 rounded-full hover:bg-red-50 hover:scale-105 transition-all shadow-sm"
+                                                title="Eliminar Foto"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!content.featuredEvent?.images || content.featuredEvent.images.length < 5) && (
+                                    <div
+                                        onClick={() => featuredInputRef.current?.click()}
+                                        className="aspect-[4/5] rounded-xl border-2 border-dashed border-slate-200 hover:border-[#0055ff]/50 hover:bg-[#0055ff]/5 transition-colors flex flex-col items-center justify-center text-slate-500 cursor-pointer"
+                                    >
+                                        <Plus className="w-8 h-8 mb-2 text-slate-400" />
+                                        <span className="text-xs font-medium">Añadir más</span>
+                                    </div>
+                                )}
+                            </div>
+                            <input
+                                type="file"
+                                ref={featuredInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        handleFileUpload(file, 'featured').finally(() => {
+                                            e.target.value = '';
+                                        });
+                                    }
+                                }}
+                            />
                         </div>
                     </div>
                 </TabsContent>
