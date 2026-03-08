@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
-import { Save, Loader2, Upload, Trash2, Smartphone, Plus, Image as ImageIcon } from 'lucide-react';
+import { Save, Loader2, Upload, Trash2, Smartphone, Plus, Image as ImageIcon, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
