@@ -358,24 +358,7 @@ const AdminContenido: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Muelle 24 Card */}
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-                                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-slate-800">Galería Muelle 24</h2>
-                                    <button className="text-sm font-medium text-[#0055ff] hover:underline">Gestionar</button>
-                                </div>
-                                <div className="p-5 flex gap-2">
-                                    <div className="w-16 h-20 rounded bg-slate-100 overflow-hidden shadow-sm">
-                                        <img src="https://images.unsplash.com/photo-1542281286-9e0a16bb7366?w=200" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="w-16 h-20 rounded bg-slate-100 overflow-hidden shadow-sm">
-                                        <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=200" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="w-16 h-20 rounded bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center text-slate-400">
-                                        <Plus className="w-4 h-4" />
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </TabsContent>
