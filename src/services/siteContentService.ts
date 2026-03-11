@@ -11,6 +11,13 @@ export interface HeroSlide {
     order: number;
 }
 
+export interface HeroConfig {
+    title_es: string;
+    title_en: string;
+    subtitle_es: string;
+    subtitle_en: string;
+}
+
 export interface FeaturedEvent {
     title_es: string;
     title_en: string;
@@ -26,6 +33,7 @@ export interface FeaturedEvent {
 
 export interface SiteContent {
     heroSlides: HeroSlide[];
+    heroConfig?: HeroConfig;
     featuredEvent: FeaturedEvent;
 }
 
@@ -42,6 +50,12 @@ const DEFAULT_CONTENT: SiteContent = {
             order: 0
         }
     ],
+    heroConfig: {
+        title_es: 'Vive la Amazonía\ncomo nunca antes',
+        title_en: 'Experience the Amazon\nlike never before',
+        subtitle_es: 'Deportes acuáticos únicos, experiencias de selva auténticas y el producto premium Muelle 24. Operador directo certificado.',
+        subtitle_en: 'Unique water sports, authentic jungle experiences and the premium Pier 24 product. Certified direct operator.',
+    },
     featuredEvent: {
         title_es: 'Muelle 24',
         title_en: 'Pier 24',
@@ -72,7 +86,14 @@ export const siteContentService = {
             }
 
             const text = await data.text();
-            return JSON.parse(text);
+            let parsedData = JSON.parse(text);
+
+            // Inyectar heroConfig si no existe (retrocompatibilidad)
+            if (!parsedData.heroConfig) {
+                parsedData.heroConfig = DEFAULT_CONTENT.heroConfig;
+            }
+
+            return parsedData;
         } catch (err) {
             console.error('Error fetching site content:', err);
             return DEFAULT_CONTENT;

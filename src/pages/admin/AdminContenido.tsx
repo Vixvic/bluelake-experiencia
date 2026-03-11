@@ -143,6 +143,70 @@ const AdminContenido: React.FC = () => {
                         {/* Editor Column */}
                         <div className="lg:col-span-2 space-y-6">
 
+                            {/* Hero Text Config Card */}
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <div className="p-5 border-b border-slate-100">
+                                    <h2 className="text-lg font-bold text-slate-800">Textos Principales del Hero</h2>
+                                    <p className="text-xs text-slate-500 mt-1">Este es el título y subtítulo master que se sobrepone a todas las imágenes del carrusel. Puedes usar "Enter" para los saltos de línea.</p>
+                                </div>
+                                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[11px] uppercase font-bold text-slate-500 mb-1.5 block">Título Principal (ES)</label>
+                                            <Textarea
+                                                rows={2}
+                                                value={content?.heroConfig?.title_es || ''}
+                                                onChange={e => setContent(prev => prev ? {
+                                                    ...prev,
+                                                    heroConfig: { ...prev.heroConfig!, title_es: e.target.value }
+                                                } : null)}
+                                                className="bg-slate-50 border-slate-200 resize-none font-medium text-slate-800"
+                                                placeholder="Ej: Vive la Amazonía&#10;como nunca antes"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[11px] uppercase font-bold text-slate-500 mb-1.5 block">Subtítulo (ES)</label>
+                                            <Textarea
+                                                rows={3}
+                                                value={content?.heroConfig?.subtitle_es || ''}
+                                                onChange={e => setContent(prev => prev ? {
+                                                    ...prev,
+                                                    heroConfig: { ...prev.heroConfig!, subtitle_es: e.target.value }
+                                                } : null)}
+                                                className="bg-slate-50 border-slate-200 resize-none text-slate-600"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[11px] uppercase font-bold text-slate-500 mb-1.5 block">Título Principal (EN)</label>
+                                            <Textarea
+                                                rows={2}
+                                                value={content?.heroConfig?.title_en || ''}
+                                                onChange={e => setContent(prev => prev ? {
+                                                    ...prev,
+                                                    heroConfig: { ...prev.heroConfig!, title_en: e.target.value }
+                                                } : null)}
+                                                className="bg-slate-50 border-slate-200 resize-none font-medium text-slate-800"
+                                                placeholder="E.g: Experience the Amazon&#10;like never before"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[11px] uppercase font-bold text-slate-500 mb-1.5 block">Subtítulo (EN)</label>
+                                            <Textarea
+                                                rows={3}
+                                                value={content?.heroConfig?.subtitle_en || ''}
+                                                onChange={e => setContent(prev => prev ? {
+                                                    ...prev,
+                                                    heroConfig: { ...prev.heroConfig!, subtitle_en: e.target.value }
+                                                } : null)}
+                                                className="bg-slate-50 border-slate-200 resize-none text-slate-600"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Hero Carousel Card */}
                             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="p-5 border-b border-slate-100 flex items-center justify-between">
@@ -343,12 +407,12 @@ const AdminContenido: React.FC = () => {
                                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent"></div>
                                                     <div className="absolute inset-0 flex flex-col justify-end p-6 pb-8 text-center items-center">
                                                         <div className="text-white/80 text-[10px] uppercase tracking-widest font-semibold mb-2">Bluelake</div>
-                                                        <h3 className="text-white text-2xl font-black leading-tight mb-2 drop-shadow-md">
-                                                            {previewSlide.title_es || 'Título Principal'}
+                                                        <h3 className="text-white text-2xl font-black leading-tight mb-2 drop-shadow-md whitespace-pre-line">
+                                                            {content?.heroConfig?.title_es || previewSlide.title_es || 'Título Principal'}
                                                         </h3>
-                                                        {previewSlide.subtitle_es && (
-                                                            <p className="text-white/80 text-xs line-clamp-2 max-w-[200px]">
-                                                                {previewSlide.subtitle_es}
+                                                        {(content?.heroConfig?.subtitle_es || previewSlide.subtitle_es) && (
+                                                            <p className="text-white/80 text-xs line-clamp-3 max-w-[200px] whitespace-pre-line">
+                                                                {content?.heroConfig?.subtitle_es || previewSlide.subtitle_es}
                                                             </p>
                                                         )}
                                                     </div>

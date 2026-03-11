@@ -40,8 +40,11 @@ const SLIDE_DURATION = 6000;
 const HeroSection: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [slides, setSlides] = useState<HeroSlide[]>([]);
+  const [heroConfig, setHeroConfig] = useState(DEFAULT_SLIDES[0]); // fallback config placeholder to avoid nulls strictly just for structure
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [globalTitle, setGlobalTitle] = useState('');
+  const [globalSubtitle, setGlobalSubtitle] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -52,10 +55,21 @@ const HeroSection: React.FC = () => {
       } else {
         setSlides(DEFAULT_SLIDES);
       }
+
+      // Inject global config for title/subtitle
+      if (data.heroConfig) {
+        setGlobalTitle(i18n.language === 'es' ? data.heroConfig.title_es : data.heroConfig.title_en);
+        setGlobalSubtitle(i18n.language === 'es' ? data.heroConfig.subtitle_es : data.heroConfig.subtitle_en);
+      } else {
+        // Fallback just in case
+        setGlobalTitle(t('hero.title'));
+        setGlobalSubtitle(t('hero.subtitle'));
+      }
+
       setIsDataLoaded(true);
     });
     return () => { mounted = false; };
-  }, []);
+  }, [i18n.language, t]);
 
   const nextSlide = useCallback(() => {
     setSlides(prev => {
@@ -128,16 +142,16 @@ const HeroSection: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-4xl md:text-5xl lg:text-[4rem] xl:text-7xl font-bold leading-[1.05] mb-4 text-white whitespace-pre-line"
           >
-            {t('hero.title')}
+            {globalTitle}
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-base md:text-xl text-white/80 max-w-xl mb-8 leading-relaxed"
+            className="text-base md:text-xl text-white/80 max-w-xl mb-8 leading-relaxed whitespace-pre-line"
           >
-            {t('hero.subtitle')}
+            {globalSubtitle}
           </motion.p>
 
           <motion.div
