@@ -73,19 +73,25 @@ const DEFAULT_CONTENT: SiteContent = {
 export const siteContentService = {
     async getContent(): Promise<SiteContent> {
         try {
-            const { data, error } = await supabase.storage
+            const { data: { publicUrl } } = supabase.storage
                 .from(BUCKET_NAME)
-                .download(SETTINGS_PATH);
+                .getPublicUrl(SETTINGS_PATH);
 
-            if (error) {
-                if (error.message.includes('Object not found')) {
+            // Destructor de caché (Cache-Buster): Fuerza al navegador a no usar versiones antiguas
+            const timestamp = new Date().getTime();
+            const response = await fetch(`${publicUrl}?t=${timestamp}`, {
+                cache: 'no-store' // Directiva adicional para evitar caché del navegador
+            });
+
+            if (!response.ok) {
+                if (response.status === 404 || response.status === 400 /* Some CDNs return 400 for missing */) {
                     console.log('Settings file not found, using default content');
                     return DEFAULT_CONTENT;
                 }
-                throw error;
+                throw new Error(`Error HTTP: ${response.status}`);
             }
 
-            const text = await data.text();
+            const text = await response.text();
             let parsedData = JSON.parse(text);
 
             // Inyectar heroConfig si no existe (retrocompatibilidad)
