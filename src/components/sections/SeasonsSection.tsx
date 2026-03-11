@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Plus, ThumbsUp, Volume2, VolumeX, X } from 'lucide-react';
 import { useSeasonalContext } from '@/contexts/SeasonalContext';
 import { supabase } from '@/integrations/supabase/client';
+import { siteContentService, SeasonsConfig } from '@/services/siteContentService';
 import { Dialog, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
 
 interface FeaturedTour {
@@ -25,12 +26,21 @@ const SeasonsSection: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { selectedSeason, setSelectedSeason } = useSeasonalContext();
   const [featuredTour, setFeaturedTour] = useState<FeaturedTour | null>(null);
+  const [seasonsConfig, setSeasonsConfig] = useState<SeasonsConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const fetchContent = async () => {
+      const content = await siteContentService.getContent();
+      if (content.seasonsConfig) {
+        setSeasonsConfig(content.seasonsConfig);
+      }
+    };
+    fetchContent();
+
     const fetchFeatured = async () => {
       setLoading(true);
       const { data, error } = await supabase
@@ -92,11 +102,15 @@ const SeasonsSection: React.FC = () => {
               viewport={{ once: true }}
               className="max-w-2xl"
             >
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-3">
-                {t('seasons.title')}
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-3 whitespace-pre-line">
+                {seasonsConfig
+                  ? (i18n.language === 'en' ? seasonsConfig.title_en : seasonsConfig.title_es)
+                  : t('seasons.title')}
               </h2>
-              <p className="text-lg opacity-70">
-                {t('seasons.subtitle')}
+              <p className="text-lg opacity-70 whitespace-pre-line">
+                {seasonsConfig
+                  ? (i18n.language === 'en' ? seasonsConfig.subtitle_en : seasonsConfig.subtitle_es)
+                  : t('seasons.subtitle')}
               </p>
             </motion.div>
 

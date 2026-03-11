@@ -18,6 +18,13 @@ export interface HeroConfig {
     subtitle_en: string;
 }
 
+export interface SeasonsConfig {
+    title_es: string;
+    title_en: string;
+    subtitle_es: string;
+    subtitle_en: string;
+}
+
 export interface FeaturedEvent {
     title_es: string;
     title_en: string;
@@ -34,9 +41,9 @@ export interface FeaturedEvent {
 export interface SiteContent {
     heroSlides: HeroSlide[];
     heroConfig?: HeroConfig;
+    seasonsConfig?: SeasonsConfig;
     featuredEvent: FeaturedEvent;
 }
-
 const SETTINGS_PATH = 'settings/site-content.json';
 const BUCKET_NAME = 'tour-images';
 
@@ -55,6 +62,12 @@ const DEFAULT_CONTENT: SiteContent = {
         title_en: 'Experience the Amazon\nlike never before',
         subtitle_es: 'Deportes acuáticos únicos, experiencias de selva auténticas y el producto premium Muelle 24. Operador directo certificado.',
         subtitle_en: 'Unique water sports, authentic jungle experiences and the premium Pier 24 product. Certified direct operator.',
+    },
+    seasonsConfig: {
+        title_es: 'Motor Estacional Amazónico',
+        title_en: 'Amazon Seasonal Engine',
+        subtitle_es: 'La Amazonía cambia radicalmente según la temporada. Filtra las experiencias disponibles para tu visita.',
+        subtitle_en: 'The Amazon changes dramatically by season. Filter experiences available for your visit.'
     },
     featuredEvent: {
         title_es: 'Muelle 24',
@@ -97,6 +110,11 @@ export const siteContentService = {
             // Inyectar heroConfig si no existe (retrocompatibilidad)
             if (!parsedData.heroConfig) {
                 parsedData.heroConfig = DEFAULT_CONTENT.heroConfig;
+            }
+
+            // Inyectar seasonsConfig si no existe
+            if (!parsedData.seasonsConfig) {
+                parsedData.seasonsConfig = DEFAULT_CONTENT.seasonsConfig;
             }
 
             return parsedData;

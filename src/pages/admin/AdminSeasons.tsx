@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Snowflake, Sun, Settings, Zap } from 'lucide-react';
 import { ViewLiveSiteButton } from '@/components/admin/ViewLiveSiteButton';
+import { siteContentService, SiteContent } from '@/services/siteContentService';
+import { Save, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 
 interface SeasonConfig {
   id: string;
@@ -12,7 +16,9 @@ interface SeasonConfig {
 
 const AdminSeasons: React.FC = () => {
   const [config, setConfig] = useState<SeasonConfig | null>(null);
+  const [siteContent, setSiteContent] = useState<SiteContent | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savingContent, setSavingContent] = useState(false);
 
   const autoSeason = (() => {
     const m = new Date().getMonth() + 1;
@@ -21,17 +27,35 @@ const AdminSeasons: React.FC = () => {
 
   useEffect(() => {
     supabase.from('seasonal_config').select('*').single().then(({ data }) => setConfig(data));
+    siteContentService.getContent().then(data => setSiteContent(data));
   }, []);
 
   const save = async (updates: Partial<SeasonConfig>) => {
     if (!config) return;
     setSaving(true);
-    const { data } = await supabase.from('seasonal_config').update(updates).eq('id', config.id).select().single();
-    if (data) setConfig(data);
+    const { data, error } = await supabase.from('seasonal_config').update(updates).eq('id', config.id).select().single();
+    if (data) {
+      setConfig(data);
+      toast.success('Regla estacional guardada');
+    }
+    if (error) toast.error('Error al guardar lógica');
     setSaving(false);
   };
 
-  if (!config) return <div className="p-8 text-muted-foreground">Cargando...</div>;
+  const saveContent = async () => {
+    if (!siteContent) return;
+    setSavingContent(true);
+    try {
+      await siteContentService.updateContent(siteContent);
+      toast.success('Textos del Motor Estacional guardados');
+    } catch (error: any) {
+      toast.error('Error al guardar textos: ' + error.message);
+    } finally {
+      setSavingContent(false);
+    }
+  };
+
+  if (!config || !siteContent) return <div className="p-8 text-muted-foreground flex items-center justify-center min-h-screen"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
   const activeSeason = config.mode === 'auto' ? autoSeason : config.current_season;
 
@@ -102,6 +126,79 @@ const AdminSeasons: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Editor de Contenido Web del Motor Estacional */}
+      <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden mt-8 animate-in fade-in slide-in-from-bottom-2">
+        <div className="p-5 border-b border-border flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Textos Principales del Módulo</h2>
+            <p className="text-xs text-muted-foreground mt-1">Configura el título y la descripción del Motor Estacional. Puedes usar "Enter" para saltos de línea.</p>
+          </div>
+          <button
+            onClick={saveContent}
+            disabled={savingContent}
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
+          >
+            {savingContent ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Guardar
+          </button>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">Título (ES)</label>
+              <Textarea
+                rows={2}
+                value={siteContent?.seasonsConfig?.title_es || ''}
+                onChange={e => setSiteContent(prev => prev ? {
+                  ...prev,
+                  seasonsConfig: { ...prev.seasonsConfig!, title_es: e.target.value }
+                } : null)}
+                className="bg-muted/30 border-border resize-none font-medium text-foreground"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">Subtítulo (ES)</label>
+              <Textarea
+                rows={4}
+                value={siteContent?.seasonsConfig?.subtitle_es || ''}
+                onChange={e => setSiteContent(prev => prev ? {
+                  ...prev,
+                  seasonsConfig: { ...prev.seasonsConfig!, subtitle_es: e.target.value }
+                } : null)}
+                className="bg-muted/30 border-border resize-none text-muted-foreground"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">Título (EN)</label>
+              <Textarea
+                rows={2}
+                value={siteContent?.seasonsConfig?.title_en || ''}
+                onChange={e => setSiteContent(prev => prev ? {
+                  ...prev,
+                  seasonsConfig: { ...prev.seasonsConfig!, title_en: e.target.value }
+                } : null)}
+                className="bg-muted/30 border-border resize-none font-medium text-foreground"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 block">Subtítulo (EN)</label>
+              <Textarea
+                rows={4}
+                value={siteContent?.seasonsConfig?.subtitle_en || ''}
+                onChange={e => setSiteContent(prev => prev ? {
+                  ...prev,
+                  seasonsConfig: { ...prev.seasonsConfig!, subtitle_en: e.target.value }
+                } : null)}
+                className="bg-muted/30 border-border resize-none text-muted-foreground"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       {saving && <p className="text-xs text-muted-foreground mt-3">Guardando...</p>}
     </div>
