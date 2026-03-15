@@ -123,7 +123,7 @@ const Navbar: React.FC = () => {
           >
             {currency === 'PEN' ? 'S/' : '$'}
           </button>
-          <Link to="/auth">
+          <Link to="/login">
             <Button
               variant="outline"
               className={`font-semibold px-4 rounded-full transition-all ${isScrolled || !isHome
@@ -182,7 +182,7 @@ const Navbar: React.FC = () => {
                 )
               )}
               <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border">
-                <Link to="/auth" className="w-full" onClick={() => setMobileOpen(false)}>
+                <Link to="/login" className="w-full" onClick={() => setMobileOpen(false)}>
                   <Button variant="outline" className="w-full font-semibold rounded-full">
                     {t('nav.login') || 'Iniciar sesión'}
                   </Button>
