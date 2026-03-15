@@ -6,6 +6,7 @@ import { Loader2, LogIn, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
+import logo from '@/assets/logo-bluelake.png';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -37,9 +38,9 @@ const Login: React.FC = () => {
 
     if (authLoading || user) {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-muted-foreground font-medium">Validando sesión...</p>
+            <div className="min-h-screen bg-primary-deep flex flex-col items-center justify-center p-4">
+                <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-white/70 font-medium">Validando sesión...</p>
             </div>
         );
     }
@@ -86,46 +87,39 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="min-h-screen bg-primary-deep flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo and Intro */}
                 <div className="text-center mb-8">
-                    <Link to="/" className="inline-block">
+                    <Link to="/" className="inline-block mb-6 flex items-center justify-center">
                         <img
-                            src="/bluelake-experiencia/logo-bluelake.png"
-                            alt="Bluelake"
-                            className="h-12 mx-auto mb-3"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            src={logo}
+                            alt="Bluelake Logo"
+                            className="h-16 w-auto object-contain"
                         />
                     </Link>
-                    <h1 className="text-2xl font-black text-foreground">
-                        {mode === 'login' ? 'Bienvenido a Bluelake' : 'Únete a la Aventura'}
-                    </h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        {mode === 'login' 
-                            ? 'Accede para ver tus reservas y panel administrativo' 
-                            : 'Crea tu cuenta gratis para gestionar tus experiencias'}
-                    </p>
+                    <h1 className="text-2xl font-bold text-white">Bluelake Admin</h1>
+                    <p className="text-white/50 text-sm mt-1">Acceso al panel de administración</p>
                 </div>
 
                 {/* Tabs / Switcher */}
-                <div className="flex bg-slate-100 rounded-xl p-1 mb-6">
+                <div className="flex bg-white/10 rounded-xl p-1 mb-4">
                     <button
                         onClick={() => setMode('login')}
-                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'login' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'login' ? 'bg-white text-primary' : 'text-white/70 hover:text-white'}`}
                     >
-                        Iniciar Sesión
+                        Iniciar sesión
                     </button>
                     <button
                         onClick={() => setMode('register')}
-                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${mode === 'register' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === 'register' ? 'bg-white text-primary' : 'text-white/70 hover:text-white'}`}
                     >
-                        Crear Cuenta
+                        Crear cuenta
                     </button>
                 </div>
 
                 {/* Form Wrapper */}
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-bluelake">
+                <div className="bg-white rounded-2xl p-8 shadow-lg">
                     {mode === 'login' ? (
                         <form onSubmit={handleLogin} className="space-y-4">
                             <div>
@@ -165,10 +159,10 @@ const Login: React.FC = () => {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-6 mt-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="w-full bg-primary hover:bg-primary-dark py-6 mt-4 rounded-xl font-semibold flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
-                                Ingresar
+                                Iniciar sesión
                             </Button>
                         </form>
                     ) : (
@@ -223,17 +217,17 @@ const Login: React.FC = () => {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-6 mt-2 bg-secondary hover:bg-secondary/80 text-foreground font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="w-full bg-primary hover:bg-primary-dark py-6 mt-4 rounded-xl font-semibold flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
-                                Crear Mi Cuenta
+                                Crear cuenta
                             </Button>
                         </form>
                     )}
                 </div>
 
-                <p className="text-center text-sm text-muted-foreground mt-6">
-                    <Link to="/#experiencias" className="hover:text-primary transition-colors hover:underline">
+                <p className="text-center text-sm text-white/50 mt-6">
+                    <Link to="/#experiencias" className="hover:text-white transition-colors hover:underline">
                         Volver al inicio y ver tours
                     </Link>
                 </p>
