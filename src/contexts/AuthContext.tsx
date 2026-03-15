@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  requiresPasswordChange: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   isAdmin: false,
+  requiresPasswordChange: false,
   loading: true,
   signOut: async () => { },
 });
@@ -24,23 +26,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [requiresPasswordChange, setRequiresPasswordChange] = useState(false);
   const [loading, setLoading] = useState(true);
 
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchRole = async (userId: string) => {
+    const fetchUserFlags = async (userId: string) => {
       try {
-        const { data } = await supabase
+        // Ejecutar promesas en paralelo para Admin y Profile Flags
+        const rolePromise = supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', userId)
           .eq('role', 'admin')
           .maybeSingle();
-        if (isMounted) setIsAdmin(!!data);
-      } catch {
-        if (isMounted) setIsAdmin(false);
+          
+        const profilePromise = supabase
+          .from('profiles')
+          .select('requires_password_change')
+          .eq('id', userId)
+          .maybeSingle();
+
+        const [roleRes, profileRes] = await Promise.all([rolePromise, profilePromise]);
+        
+        if (isMounted) {
+            setIsAdmin(!!roleRes.data);
+            setRequiresPasswordChange((profileRes.data as any)?.requires_password_change === true);
+        }
+      } catch (e) {
+        console.error("Error fetching user flags", e);
+        if (isMounted) {
+            setIsAdmin(false);
+            setRequiresPasswordChange(false);
+        }
       }
     };
 
@@ -55,11 +75,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (_event === 'SIGNED_IN') {
           setLoading(true);
           setTimeout(async () => {
-            if (sess?.user) await fetchRole(sess.user.id);
+            if (sess?.user) await fetchUserFlags(sess.user.id);
             if (isMounted) setLoading(false);
           }, 0);
         } else if (_event === 'SIGNED_OUT') {
           setIsAdmin(false);
+          setRequiresPasswordChange(false);
           setLoading(false);
         }
       }
@@ -72,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(sess);
         setUser(sess?.user ?? null);
         if (sess?.user) {
-          await fetchRole(sess.user.id);
+          await fetchUserFlags(sess.user.id);
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -92,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, requiresPasswordChange, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

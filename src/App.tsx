@@ -11,7 +11,6 @@ import Index from "./pages/Index";
 import AboutPage from "./pages/AboutPage";
 import NotFound from "./pages/NotFound";
 import TourDetailPage from "./pages/TourDetailPage";
-import AuthPage from "./pages/AuthPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminTours from "./pages/admin/AdminTours";
@@ -19,7 +18,8 @@ import AdminBookings from "./pages/admin/AdminBookings";
 import AdminSeasons from "./pages/admin/AdminSeasons";
 import AdminContenido from "./pages/admin/AdminContenido";
 import AdminSettings from "./pages/admin/AdminSettings";
-import ClientLogin from "./pages/client/ClientLogin";
+import Login from "./pages/shared/Login";
+import UpdatePassword from "./pages/shared/UpdatePassword";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientProfile from "./pages/client/ClientProfile";
 import ItineraryVoucher from "./pages/client/ItineraryVoucher";
@@ -34,7 +34,7 @@ function ProtectedAdmin({ children }: { children: React.ReactNode }) {
       <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
-  if (!isAdmin) return <Navigate to="/auth" replace />;
+  if (!isAdmin) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -45,7 +45,7 @@ function ProtectedClient({ children }: { children: React.ReactNode }) {
       <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
-  if (!user) return <Navigate to="/client/login" replace />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   return <>{children}</>;
 }
 
@@ -62,10 +62,10 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/nosotros" element={<AboutPage />} />
                 <Route path="/tours-iquitos/:slug" element={<TourDetailPage />} />
-                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/update-password" element={<UpdatePassword />} />
 
                 {/* Client Portal */}
-                <Route path="/client/login" element={<ClientLogin />} />
                 <Route path="/client/dashboard" element={<ProtectedClient><ClientDashboard /></ProtectedClient>} />
                 <Route path="/client/profile" element={<ProtectedClient><ClientProfile /></ProtectedClient>} />
                 <Route path="/client/itinerary/:id" element={<ItineraryVoucher />} />
