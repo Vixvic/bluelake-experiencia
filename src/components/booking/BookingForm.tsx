@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { supabase } from '@/integrations/supabase/client';
 import { CalendarIcon, X, CheckCircle2, Loader2, MessageCircle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,21 +13,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-export interface BookingTour {
-    id: string;
-    title_es: string;
-    title_en: string;
-    base_price: number;
-    child_price?: number | null;
-    max_capacity: number;
-    current_bookings: number;
-    category: string;
-    season: string;
-    image_url?: string;
-}
+import { BookingTour, BookingFormData } from '@/utils/whatsapp-helper';
+import { useBooking } from '@/hooks/useBooking';
 
 interface BookingFormProps {
     tour: BookingTour;
@@ -36,7 +22,7 @@ interface BookingFormProps {
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 
-const bookingSchema = z.object({
+const getBookingSchema = (maxCapacity: number) => z.object({
     customer_name: z.string().min(2, 'Nombre requerido'),
     customer_email: z.string().email('Email inválido'),
     customer_phone: z.string().min(6, 'Teléfono requerido'),
@@ -47,63 +33,10 @@ const bookingSchema = z.object({
     payment_method: z.enum(['transfer', 'yape_plin']),
     payment_mode: z.enum(['full', 'partial']),
     notes: z.string().optional(),
+}).refine(data => (data.adults + data.children) <= maxCapacity, {
+    message: `Excede la capacidad de ${maxCapacity} cupos`,
+    path: ['adults'],
 });
-
-type BookingFormData = z.infer<typeof bookingSchema>;
-
-const CARD_FEE = 0;
-const BLUELAKE_WP = '51996130193'; // sin + ni espacios
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function generatePassword(length = 10): string {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
-    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
-function buildWhatsAppMessage(
-    tour: BookingTour,
-    data: BookingFormData,
-    dates: Date[],
-    total: number,
-    toPay: number,
-    clientEmail: string,
-    clientPassword: string,
-    reservationCode: string,
-): string {
-    const dateList = dates.map(d => format(d, 'dd/MM/yyyy', { locale: es })).join(', ');
-    const method = data.payment_method === 'transfer' ? 'Transferencia bancaria' : 'Yape/Plin';
-    const mode = data.payment_mode === 'partial' ? 'Pago parcial (50%)' : 'Pago completo';
-    const portalUrl = `https://vixvic.github.io/bluelake-experiencia/client/login`;
-
-    return encodeURIComponent(
-        `🌿 *RESERVA BLUELAKE EXPERIENCIA* 🌿\n` +
-        `━━━━━━━━━━━━━━━━━━━\n` +
-        `📋 *Código:* #${reservationCode.slice(-6).toUpperCase()}\n` +
-        `🎯 *Experiencia:* ${tour.title_es}\n` +
-        `📅 *Fecha(s):* ${dateList}\n` +
-        `👥 *Viajeros:* ${data.adults} adulto(s)${data.children > 0 ? ` + ${data.children} niño(s)` : ''}\n` +
-        `━━━━━━━━━━━━━━━━━━━\n` +
-        `💰 *Total:* S/ ${total.toFixed(2)}\n` +
-        `💳 *Modalidad:* ${mode}\n` +
-        `📤 *A pagar ahora:* S/ ${toPay.toFixed(2)}\n` +
-        `🏦 *Método:* ${method}\n` +
-        `━━━━━━━━━━━━━━━━━━━\n` +
-        `👤 *Cliente:* ${data.customer_name}\n` +
-        `📧 *Email:* ${data.customer_email}\n` +
-        `📱 *Teléfono:* ${data.customer_phone}\n` +
-        `🪪 *Documento:* ${data.document_type} ${data.document_number}\n` +
-        (data.notes ? `📝 *Notas:* ${data.notes}\n` : '') +
-        `━━━━━━━━━━━━━━━━━━━\n` +
-        `🔐 *ACCESO A TU PANEL*\n` +
-        `🌐 ${portalUrl}\n` +
-        `📧 Usuario: ${clientEmail}\n` +
-        `🔑 Contraseña temporal: ${clientPassword}\n` +
-        `*(Cambia tu contraseña al ingresar por primera vez)*\n` +
-        `━━━━━━━━━━━━━━━━━━━\n` +
-        `Responde este mensaje para confirmar tu reserva. ¡Gracias! 🙏`
-    );
-}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -112,15 +45,15 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
     const { formatPrice } = useCurrency();
 
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-    const [submitted, setSubmitted] = useState(false);
-    const [submitError, setSubmitError] = useState('');
-    const [whatsAppUrl, setWhatsAppUrl] = useState('');
+    
+    const { submitBooking, submitted, submitError, whatsAppUrl, isRecurring } = useBooking();
 
     const isSoldOut = tour.current_bookings >= tour.max_capacity;
+    const availableCapacity = Math.max(0, tour.max_capacity - tour.current_bookings);
     const tourTitle = i18n.language === 'es' ? tour.title_es : tour.title_en;
 
     const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<BookingFormData>({
-        resolver: zodResolver(bookingSchema),
+        resolver: zodResolver(getBookingSchema(availableCapacity)),
         defaultValues: {
             adults: 1,
             children: 0,
@@ -150,85 +83,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
     };
 
     const onSubmit = async (data: BookingFormData) => {
-        if (selectedDates.length === 0) {
-            setSubmitError('Debes seleccionar al menos una fecha.');
-            return;
-        }
-        setSubmitError('');
-
-        try {
-            // 1. Generar cuenta de cliente en Supabase Auth
-            const generatedPassword = generatePassword();
-            let userId: string | null = null;
-
-            // Intentamos crear el usuario. Si ya existe, solo guardaremos la reserva sin user_id
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: data.customer_email,
-                password: generatedPassword,
-                options: {
-                    data: { full_name: data.customer_name },
-                    // Evitar que Supabase envíe su propio correo de confirmación
-                    emailRedirectTo: undefined,
-                },
-            });
-
-            if (!authError && authData?.user) {
-                userId = authData.user.id;
-                // Actualizar perfil con datos del documento y teléfono
-                // Se castea a 'any' porque document_type, document_number y role no están en definitions actuales de types.ts
-                await supabase.from('profiles').upsert({
-                    id: userId,
-                    user_id: userId, // Requerido en los tipos generados
-                    full_name: data.customer_name,
-                    document_type: data.document_type,
-                    document_number: data.document_number,
-                    phone: data.customer_phone,
-                    role: 'client',
-                } as any);
-            }
-
-            // 2. Insertar la reserva
-            const { data: booking, error: bookingError } = await supabase.from('bookings').insert({
-                tour_id: tour.id,
-                dates: selectedDates.map(d => format(d, 'yyyy-MM-dd')),
-                adults: data.adults,
-                children: data.children,
-                total_amount: total,
-                payment_mode: data.payment_mode,
-                payment_method: data.payment_method,
-                card_fee: 0,
-                customer_name: data.customer_name,
-                customer_email: data.customer_email,
-                customer_phone: data.customer_phone || null,
-                document_type: data.document_type,
-                document_number: data.document_number,
-                notes: data.notes || null,
-                status: 'pending',
-                user_id: userId,
-            }).select('id').single();
-
-            if (bookingError) throw bookingError;
-
-            // 3. Construir URL de WhatsApp con resumen + credenciales
-            const reservationCode = booking?.id || 'BL' + Date.now();
-            const message = buildWhatsAppMessage(
-                tour,
-                data,
-                selectedDates,
-                total,
-                toPay,
-                data.customer_email,
-                generatedPassword,
-                reservationCode
-            );
-            const wpUrl = `https://wa.me/${BLUELAKE_WP}?text=${message}`;
-            setWhatsAppUrl(wpUrl);
-            setSubmitted(true);
-
-        } catch (err: unknown) {
-            console.error('Error en reserva:', err);
-            setSubmitError('Error al procesar la reserva. Por favor intenta de nuevo.');
-        }
+        if (selectedDates.length === 0) return;
+        await submitBooking(data, selectedDates, tour, total, toPay);
     };
 
     // ── Success Screen ──────────────────────────────────────────────────────────
@@ -260,9 +116,15 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                         <Lock className="w-4 h-4 text-primary" />
                         <span className="text-sm font-semibold text-foreground">Tu acceso al Portal de Cliente</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Hemos creado tu cuenta. Dentro del mensaje de WhatsApp encontrarás tu email y contraseña temporal para ingresar a tu panel personal.
-                    </p>
+                    {isRecurring ? (
+                        <p className="text-xs text-muted-foreground">
+                            Hemos vinculado esta reserva a tu cuenta existente. Ingresa al panel de cliente con tu contraseña habitual.
+                        </p>
+                    ) : (
+                        <p className="text-xs text-muted-foreground">
+                            Hemos creado tu cuenta. Dentro del mensaje de WhatsApp encontrarás tu email y contraseña temporal para ingresar a tu panel personal.
+                        </p>
+                    )}
                     <a
                         href="/bluelake-experiencia/client/login"
                         className="text-xs text-primary hover:underline font-semibold block mt-2"
