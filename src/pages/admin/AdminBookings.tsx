@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, XCircle, Search, FileDown, Plus, Mail, Trash2, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { CheckCircle2, XCircle, Search, FileDown, Plus, Mail, Trash2, Link as LinkIcon, ExternalLink, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -131,6 +131,35 @@ const AdminBookings: React.FC = () => {
         title: "Enlace Copiado",
         description: "El enlace al Voucher ha sido copiado al portapapeles.",
     });
+  };
+
+  const handleOpenWhatsApp = (phone: string, name: string) => {
+    if (!phone) {
+        toast({
+            variant: "destructive",
+            title: "Teléfono no disponible",
+            description: "El cliente no proporcionó un número de teléfono.",
+        });
+        return;
+    }
+    // Clean phone number (remove spaces, dashes, etc.)
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = encodeURIComponent(`Hola ${name}, nos comunicamos de Bluelake. `);
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
+  };
+
+  const handleOpenEmail = (email: string, name: string) => {
+    if (!email) {
+        toast({
+            variant: "destructive",
+            title: "Email no disponible",
+            description: "El cliente no proporcionó un correo electrónico.",
+        });
+        return;
+    }
+    const subject = encodeURIComponent('Consulta sobre tu reserva en Bluelake Experiencia');
+    const body = encodeURIComponent(`Hola ${name},\n\nNos comunicamos de Bluelake Experiencia con respecto a tu reserva...\n\n`);
+    window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
   };
 
   const exportCSV = () => {
@@ -323,7 +352,20 @@ const AdminBookings: React.FC = () => {
                                 </a>
                               </>
                             )}
-                            <button className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors" title="Enviar email">
+
+                            {/* Botones de Contacto (Siempre visibles) */}
+                            <button 
+                              onClick={() => handleOpenWhatsApp(b.customer_phone, b.customer_name)}
+                              className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 text-green-700 transition-colors" 
+                              title="Enviar WhatsApp"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleOpenEmail(b.customer_email, b.customer_name)}
+                              className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors" 
+                              title="Enviar Email"
+                            >
                               <Mail className="w-4 h-4" />
                             </button>
                             <button
