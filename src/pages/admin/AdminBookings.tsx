@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle2, XCircle, Search, FileDown, Plus, Mail, Trash2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { CheckCircle2, XCircle, Search, FileDown, Plus, Mail, Trash2, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ const AdminBookings: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [tours, setTours] = useState<{ id: string; title_es: string }[]>([]);
+  const { toast } = useToast();
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,6 +116,21 @@ const AdminBookings: React.FC = () => {
   const updateStatus = async (id: string, status: string) => {
     await supabase.from('bookings').update({ status }).eq('id', id);
     fetchBookings();
+    if (status === 'confirmed') {
+        toast({
+            title: "Pago Confirmado",
+            description: "Puedes copiar el enlace del Itinerario ahora.",
+        });
+    }
+  };
+
+  const copyVoucherLink = (id: string) => {
+    const link = `${window.location.origin}/bluelake-experiencia/client/itinerary/${id}`;
+    navigator.clipboard.writeText(link);
+    toast({
+        title: "Enlace Copiado",
+        description: "El enlace al Voucher ha sido copiado al portapapeles.",
+    });
   };
 
   const exportCSV = () => {
@@ -285,6 +302,25 @@ const AdminBookings: React.FC = () => {
                                 >
                                   <XCircle className="w-4 h-4" />
                                 </button>
+                              </>
+                            )}
+                            {b.status === 'confirmed' && (
+                              <>
+                                <button 
+                                  onClick={() => copyVoucherLink(b.id)}
+                                  className="p-1.5 rounded-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-700 transition-colors" 
+                                  title="Copiar Link del Voucher"
+                                >
+                                  <LinkIcon className="w-4 h-4" />
+                                </button>
+                                <a 
+                                  href={`/bluelake-experiencia/client/itinerary/${b.id}`}
+                                  target="_blank"
+                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors" 
+                                  title="Ver Voucher en Nueva Pestaña"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
                               </>
                             )}
                             <button className="p-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors" title="Enviar email">
