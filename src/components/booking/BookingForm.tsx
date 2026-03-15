@@ -175,14 +175,16 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
             if (!authError && authData?.user) {
                 userId = authData.user.id;
                 // Actualizar perfil con datos del documento y teléfono
+                // Se castea a 'any' porque document_type, document_number y role no están en definitions actuales de types.ts
                 await supabase.from('profiles').upsert({
                     id: userId,
+                    user_id: userId, // Requerido en los tipos generados
                     full_name: data.customer_name,
                     document_type: data.document_type,
                     document_number: data.document_number,
                     phone: data.customer_phone,
                     role: 'client',
-                });
+                } as any);
             }
 
             // 2. Insertar la reserva
