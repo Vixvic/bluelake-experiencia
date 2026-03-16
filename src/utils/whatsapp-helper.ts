@@ -29,10 +29,7 @@ export interface BookingFormData {
 
 export const BLUELAKE_WP = '51996130193'; // sin + ni espacios
 
-export function generatePassword(length = 10): string {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
-    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
+
 
 export function buildWhatsAppMessage(
     tour: BookingTour,
@@ -60,7 +57,7 @@ export function buildWhatsAppMessage(
         accessMessage = `🔐 *ACCESO A TU PANEL*\n` +
                         `🌐 ${portalUrl}\n` +
                         `📧 Usuario: ${clientEmail}\n` +
-                        `🔑 Contraseña temporal: ${clientPassword}\n` +
+                        `🔑 Contraseña temporal: Tu documento (${clientPassword})\n` +
                         `*(Te recomendamos cambiarla al ingresar por primera vez)*`;
     }
 

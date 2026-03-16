@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { BookingTour, BookingFormData, generatePassword, buildWhatsAppMessage, BLUELAKE_WP } from '@/utils/whatsapp-helper';
+import { BookingTour, BookingFormData, buildWhatsAppMessage, BLUELAKE_WP } from '@/utils/whatsapp-helper';
 import { format } from 'date-fns';
 
 interface UseBookingResult {
@@ -20,7 +20,8 @@ export function useBooking(): UseBookingResult {
     const submitBooking = async (data: BookingFormData, selectedDates: Date[], tour: BookingTour, total: number, toPay: number) => {
         setSubmitError('');
         try {
-            const tempPassword = generatePassword();
+            // Plan B: Usar DNI/Documento como contraseña temporal (mínimo 6 caracteres para Supabase)
+            const tempPassword = data.document_number.padStart(6, '0');
             let newUserId: string | null = null;
             let finalIsRecurring = false;
 
