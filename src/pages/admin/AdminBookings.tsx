@@ -133,7 +133,9 @@ const AdminBookings: React.FC = () => {
     });
   };
 
-  const handleOpenWhatsApp = (phone: string, name: string) => {
+  const handleOpenWhatsApp = (booking: Booking, reservationId: string) => {
+    const phone = booking.customer_phone;
+    const name = booking.customer_name;
     if (!phone) {
         toast({
             variant: "destructive",
@@ -144,7 +146,27 @@ const AdminBookings: React.FC = () => {
     }
     // Clean phone number (remove spaces, dashes, etc.)
     const cleanPhone = phone.replace(/\D/g, '');
-    const message = encodeURIComponent(`Hola ${name}, nos comunicamos de Bluelake. `);
+    
+    // Generate text message
+    const dateList = booking.dates?.map(d => format(new Date(d), 'dd/MM/yyyy', { locale: es })).join(', ') || '';
+    const portalUrl = `${window.location.origin}/bluelake-experiencia/login`;
+
+    const message = encodeURIComponent(
+        `🌿 *RESERVA BLUELAKE EXPERIENCIA* 🌿\n` +
+        `Hola ${name},\n\n` +
+        `Nos comunicamos para enviarte los detalles actualizados de tu reserva:\n\n` +
+        `📋 *Código:* ${reservationId}\n` +
+        `🎯 *Experiencia:* ${booking.tours?.title_es || 'Tour'}\n` +
+        `📅 *Fecha(s):* ${dateList}\n` +
+        `👥 *Viajeros:* ${booking.adults + booking.children} persona(s)\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `🔐 *ACCESO A TU PANEL*\n` +
+        `🌐 ${portalUrl}\n` +
+        `📧 Usuario: ${booking.customer_email}\n\n` +
+        `*(Podrás ver el estado de tu pago y descargar tu Voucher desde allí)*\n\n` +
+        `¡Gracias por confiar en nosotros! 🙏`
+    );
+
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
@@ -355,9 +377,9 @@ const AdminBookings: React.FC = () => {
 
                             {/* Botones de Contacto (Siempre visibles) */}
                             <button 
-                              onClick={() => handleOpenWhatsApp(b.customer_phone, b.customer_name)}
+                              onClick={() => handleOpenWhatsApp(b, getReservationId(i + (currentPage - 1) * perPage, filtered.length))}
                               className="p-1.5 rounded-lg bg-green-100 hover:bg-green-200 text-green-700 transition-colors" 
-                              title="Enviar WhatsApp"
+                              title="Enviar recordatorio de reserva por WhatsApp"
                             >
                               <MessageCircle className="w-4 h-4" />
                             </button>
