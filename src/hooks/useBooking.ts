@@ -47,14 +47,17 @@ export function useBooking(): UseBookingResult {
             });
 
             if (signUpError) {
-                // Si el error es que el correo ya existe → es un cliente recurrente
-                const isAlreadyRegistered =
-                    signUpError.message.toLowerCase().includes('already registered') ||
-                    signUpError.message.toLowerCase().includes('user already exists');
+                const errMsg = signUpError.message.toLowerCase();
+                const errStatus = (signUpError as any).status;
+                console.error('[useBooking] signUp error:', signUpError.status, signUpError.message);
 
-                if (isAlreadyRegistered) {
-                    // Es recurrente: intentamos obtener su user_id vía signIn
-                    finalIsRecurring = true;
+                // Detectar: usuario ya existe OR rate limit OR email de burner
+                const isAlreadyRegistered = errMsg.includes('already registered') || errMsg.includes('user already exists');
+                const isRateLimit = errMsg.includes('rate') || errMsg.includes('limit') || errStatus === 429 || errStatus === 422;
+
+                if (isAlreadyRegistered || isRateLimit) {
+                    // Intentar signIn para obtener user_id (puede que ya esté registrado)
+                    finalIsRecurring = isAlreadyRegistered;
                     const { data: signInData } = await supabase.auth.signInWithPassword({
                         email: data.customer_email,
                         password: tempPassword,
@@ -70,12 +73,23 @@ export function useBooking(): UseBookingResult {
                 // Usuario NUEVO creado correctamente
                 newUserId = authData.user.id;
                 finalIsRecurring = false;
+                console.log('[useBooking] nuevo usuario creado:', authData.user.id);
+            } else {
+                // signUp sin error pero sin usuario (email ya confirmado vs. deshabilitado?)
+                console.warn('[useBooking] signUp sin error pero user es null');
             }
 
             // ── PASO 2: Guardar la reserva en la base de datos ────────────────────────────
+            // Convertir Date objects a strings 'YYYY-MM-DD' para evitar problemas de timezone
+            const datesAsStrings = selectedDates.map(d => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            });
             const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('create_booking_transaction', {
                 p_tour_id: tour.id,
-                p_dates: selectedDates,
+                p_dates: datesAsStrings,
                 p_adults: data.adults,
                 p_children: data.children,
                 p_total_amount: total,
