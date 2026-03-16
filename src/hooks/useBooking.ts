@@ -20,8 +20,8 @@ export function useBooking(): UseBookingResult {
     const submitBooking = async (data: BookingFormData, selectedDates: Date[], tour: BookingTour, total: number, toPay: number) => {
         setSubmitError('');
         try {
-            // Plan B: Usar DNI/Documento como contraseña temporal (mínimo 6 caracteres para Supabase)
-            const tempPassword = data.document_number.padStart(6, '0');
+            // Plan C: Generar contraseña predecible que cumpla con HIBP (Mayus, Minus, Num)
+            const tempPassword = `Bluelake${data.document_number}`;
             let newUserId: string | null = null;
             let finalIsRecurring = false;
 

@@ -163,7 +163,7 @@ const AdminBookings: React.FC = () => {
         `🔐 *ACCESO A TU PANEL*\n` +
         `🌐 ${portalUrl}\n` +
         `📧 Correo: ${booking.customer_email}\n` +
-        `🔑 Clave: Tu nro de ${booking.document_type || 'documento'} *(o tu clave personal si ya la actualizaste)*\n\n` +
+        `🔑 Clave temporal: Bluelake${booking.document_number || ''} *(o tu clave personal si ya la actualizaste)*\n\n` +
         `¡Gracias por confiar en nosotros! 🙏`
     );
 

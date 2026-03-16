@@ -57,7 +57,7 @@ export function buildWhatsAppMessage(
         accessMessage = `🔐 *ACCESO A TU PANEL*\n` +
                         `🌐 ${portalUrl}\n` +
                         `📧 Usuario: ${clientEmail}\n` +
-                        `🔑 Contraseña temporal: Tu documento (${clientPassword})\n` +
+                        `🔑 Contraseña temporal: ${clientPassword}\n` +
                         `*(Te recomendamos cambiarla al ingresar por primera vez)*`;
     }
 
