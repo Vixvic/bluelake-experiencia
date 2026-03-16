@@ -14,7 +14,7 @@ const Login: React.FC = () => {
     const { user, isAdmin, requiresPasswordChange, loading: authLoading } = useAuth();
     const { toast } = useToast();
     
-    const [mode, setMode] = useState<'login' | 'register'>('login');
+    const [mode, setMode] = useState<'login' | 'register' | 'recover'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
@@ -83,6 +83,25 @@ const Login: React.FC = () => {
                 description: "¡Bienvenido a Bluelake! Ya puedes reservar tus experiencias.",
             });
             // El useEffect de arriba los redirigirá automáticamente ya que `user` cambiará.
+        }
+    };
+
+    const handleRecover = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) {
+            toast({ variant: "destructive", title: "Error", description: "Ingresa tu correo para recuperar la contraseña." });
+            return;
+        }
+        setLoading(true);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/bluelake-experiencia/update-password`,
+        });
+        setLoading(false);
+        if (error) {
+            toast({ variant: "destructive", title: "Error", description: error.message });
+        } else {
+            toast({ title: "Correo enviado", description: "Revisa tu bandeja de entrada para restablecer tu contraseña." });
+            setMode('login');
         }
     };
 
@@ -164,8 +183,16 @@ const Login: React.FC = () => {
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
                                 Iniciar sesión
                             </Button>
+                            
+                            <button
+                                type="button"
+                                onClick={() => setMode('recover')}
+                                className="w-full text-center text-sm font-medium text-primary hover:underline mt-4"
+                            >
+                                ¿Olvidaste o no tienes tu contraseña?
+                            </button>
                         </form>
-                    ) : (
+                    ) : mode === 'register' ? (
                         <form onSubmit={handleRegister} className="space-y-4">
                             <div>
                                 <label className="text-sm font-semibold text-foreground mb-1.5 block">Nombre Completo</label>
@@ -222,6 +249,39 @@ const Login: React.FC = () => {
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
                                 Crear cuenta
                             </Button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleRecover} className="space-y-4">
+                             <div>
+                                <label className="text-sm font-semibold text-foreground mb-1.5 block">Correo electrónico de tu reserva</label>
+                                <Input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="tu@email.com"
+                                    required
+                                    autoComplete="email"
+                                    disabled={loading}
+                                />
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    Te enviaremos un enlace seguro para que puedas establecer una nueva contraseña.
+                                </p>
+                            </div>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-primary hover:bg-primary-dark py-6 mt-4 rounded-xl font-semibold flex items-center justify-center gap-2"
+                            >
+                                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                                Enviar enlace de recuperación
+                            </Button>
+                            <button
+                                type="button"
+                                onClick={() => setMode('login')}
+                                className="w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground hover:underline mt-4"
+                            >
+                                Volver al inicio de sesión
+                            </button>
                         </form>
                     )}
                 </div>
