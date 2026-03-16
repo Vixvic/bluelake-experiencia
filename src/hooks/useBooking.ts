@@ -20,39 +20,56 @@ export function useBooking(): UseBookingResult {
     const submitBooking = async (data: BookingFormData, selectedDates: Date[], tour: BookingTour, total: number, toPay: number) => {
         setSubmitError('');
         try {
-            // Plan C: Generar contraseña predecible que cumpla con HIBP (Mayus, Minus, Num)
+            // Contraseña temporal: "Bluelake" + DNI (cumple Mayus + minus + nums)
             const tempPassword = `Bluelake${data.document_number}`;
             let newUserId: string | null = null;
             let finalIsRecurring = false;
 
-            // 1. Intentar registrar al usuario en Auth
-            // Si el correo ya existe, Supabase Auth nos devolverá User Already Registered
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            // ── PASO 1: Registrar usuario en Auth ─────────────────────────────────────────
+            // Usamos la misma lógica limpia de Login.tsx que funciona perfectamente.
+            const { data: authData, error: signUpError } = await supabase.auth.signUp({
                 email: data.customer_email,
                 password: tempPassword,
                 options: {
-                    data: { full_name: data.customer_name },
-                    emailRedirectTo: undefined,
+                    data: {
+                        full_name: data.customer_name,
+                        document_type: data.document_type,
+                        document_number: data.document_number,
+                        phone: data.customer_phone,
+                    },
                 },
             });
 
-            if (authError) {
-                // Permitimos continuar SOLO si el error es que el usuario ya existe (recurrente)
-                const isAlreadyRegistered = authError.message.toLowerCase().includes('already registered') || 
-                                          authError.message.toLowerCase().includes('user already exists');
-                
-                if (!isAlreadyRegistered) {
-                     console.error('Error Crítico de Auth:', authError);
-                     throw new Error(`Restricción del servidor (Auth): ${authError.message}`);
+            if (signUpError) {
+                // Si el error es que el correo ya existe → es un cliente recurrente
+                const isAlreadyRegistered =
+                    signUpError.message.toLowerCase().includes('already registered') ||
+                    signUpError.message.toLowerCase().includes('user already exists');
+
+                if (isAlreadyRegistered) {
+                    // Es recurrente: intentamos obtener su user_id vía signIn
+                    finalIsRecurring = true;
+                    const { data: signInData } = await supabase.auth.signInWithPassword({
+                        email: data.customer_email,
+                        password: tempPassword,
+                    });
+                    if (signInData?.user) {
+                        newUserId = signInData.user.id;
+                    }
+                } else {
+                    // Error real del servidor → lo propagamos
+                    throw new Error(`Error al crear la cuenta: ${signUpError.message}`);
                 }
             } else if (authData?.user) {
+                // Usuario NUEVO creado correctamente
                 newUserId = authData.user.id;
+                finalIsRecurring = false;
             }
 
-            // 2. Ejecutar transacción atómica en base de datos para salvar Perfil y Reserva a la vez
+            // ── PASO 2: Guardar la reserva en la base de datos ────────────────────────────
             const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('create_booking_transaction', {
                 p_tour_id: tour.id,
-                p_dates: selectedDates, // El array de Date de JS es mapeable o bien podemos pasarlo parseado a YYYY-MM-DD
+                p_dates: selectedDates,
                 p_adults: data.adults,
                 p_children: data.children,
                 p_total_amount: total,
@@ -64,18 +81,18 @@ export function useBooking(): UseBookingResult {
                 p_document_type: data.document_type,
                 p_document_number: data.document_number,
                 p_notes: data.notes || '',
-                p_user_id: newUserId
+                p_user_id: newUserId,
             });
 
             if (rpcError) throw rpcError;
-            
-            const resultObj = rpcData as any;
-            if (resultObj) {
-                finalIsRecurring = !!resultObj.is_recurring_customer;
-                setIsRecurring(finalIsRecurring);
-            }
 
-            // 3. Generar enlace de confirmación por WhatsApp
+            const resultObj = rpcData as any;
+            if (resultObj?.is_recurring_customer !== undefined) {
+                finalIsRecurring = !!resultObj.is_recurring_customer;
+            }
+            setIsRecurring(finalIsRecurring);
+
+            // ── PASO 3: Generar link de WhatsApp ──────────────────────────────────────────
             const reservationCode = resultObj?.booking_id || 'BL' + Date.now();
             const message = buildWhatsAppMessage(
                 tour,
@@ -88,9 +105,10 @@ export function useBooking(): UseBookingResult {
                 reservationCode,
                 finalIsRecurring
             );
-            
+
             setWhatsAppUrl(`https://wa.me/${BLUELAKE_WP}?text=${message}`);
             setSubmitted(true);
+
         } catch (err: any) {
             console.error('Error en reserva:', err);
             setSubmitError(err.message || 'Ocurrió un error guardando la reserva. Por favor intenta de nuevo.');
