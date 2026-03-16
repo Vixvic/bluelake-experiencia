@@ -48,7 +48,7 @@ export function buildWhatsAppMessage(
     const dateList = dates.map(d => format(d, 'dd/MM/yyyy', { locale: es })).join(', ');
     const method = data.payment_method === 'transfer' ? 'Transferencia bancaria' : 'Yape/Plin';
     const mode = data.payment_mode === 'partial' ? 'Pago parcial (50%)' : 'Pago completo';
-    const portalUrl = `https://vixvic.github.io/bluelake-experiencia/client/login`;
+    const portalUrl = `https://vixvic.github.io/bluelake-experiencia/login`;
 
     let accessMessage = '';
     if (isRecurring) {
