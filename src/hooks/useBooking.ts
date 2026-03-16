@@ -9,6 +9,8 @@ interface UseBookingResult {
     submitError: string;
     whatsAppUrl: string;
     isRecurring: boolean;
+    tempPassword: string;
+    customerEmail: string;
 }
 
 export function useBooking(): UseBookingResult {
@@ -16,12 +18,16 @@ export function useBooking(): UseBookingResult {
     const [submitError, setSubmitError] = useState('');
     const [whatsAppUrl, setWhatsAppUrl] = useState('');
     const [isRecurring, setIsRecurring] = useState(false);
+    const [tempPassword, setTempPassword] = useState('');
+    const [customerEmail, setCustomerEmail] = useState('');
 
     const submitBooking = async (data: BookingFormData, selectedDates: Date[], tour: BookingTour, total: number, toPay: number) => {
         setSubmitError('');
         try {
             // Contraseña temporal: "Bluelake" + DNI (cumple Mayus + minus + nums)
             const tempPassword = `Bluelake${data.document_number}`;
+            setTempPassword(tempPassword);
+            setCustomerEmail(data.customer_email);
             let newUserId: string | null = null;
             let finalIsRecurring = false;
 
@@ -115,5 +121,5 @@ export function useBooking(): UseBookingResult {
         }
     };
 
-    return { submitBooking, submitted, submitError, whatsAppUrl, isRecurring };
+    return { submitBooking, submitted, submitError, whatsAppUrl, isRecurring, tempPassword, customerEmail };
 }

@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarIcon, X, CheckCircle2, Loader2, MessageCircle, Lock } from 'lucide-react';
+import { CalendarIcon, X, CheckCircle2, Loader2, MessageCircle, Lock, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,7 +46,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
 
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
     
-    const { submitBooking, submitted, submitError, whatsAppUrl, isRecurring } = useBooking();
+    const { submitBooking, submitted, submitError, whatsAppUrl, isRecurring, tempPassword, customerEmail } = useBooking();
 
     const isSoldOut = tour.current_bookings >= tour.max_capacity;
     const availableCapacity = Math.max(0, tour.max_capacity - tour.current_bookings);
@@ -121,15 +121,26 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                             Hemos vinculado esta reserva a tu cuenta existente. Ingresa al panel de cliente con tu contraseña habitual.
                         </p>
                     ) : (
-                        <p className="text-xs text-muted-foreground">
-                            Hemos creado tu cuenta. Dentro del mensaje de WhatsApp encontrarás tu email y contraseña temporal para ingresar a tu panel personal.
-                        </p>
+                        <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">Hemos creado tu cuenta. Usa estas credenciales para ingresar:</p>
+                            <div className="bg-background rounded-lg p-2.5 border border-border space-y-1.5">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">📧 Correo</p>
+                                    <p className="text-xs font-mono font-semibold text-foreground select-all">{customerEmail}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">🔑 Contraseña temporal</p>
+                                    <p className="text-xs font-mono font-bold text-primary select-all">{tempPassword}</p>
+                                </div>
+                                <p className="text-xs text-amber-600 font-medium">⚠️ Cópiala ahora y cámbiala al ingresar</p>
+                            </div>
+                        </div>
                     )}
                     <a
-                        href="/bluelake-experiencia/client/login"
+                        href="/bluelake-experiencia/login"
                         className="text-xs text-primary hover:underline font-semibold block mt-2"
                     >
-                        → Ir al Panel de Cliente
+                        → Ir al Portal de Cliente
                     </a>
                 </div>
             </div>
