@@ -37,11 +37,13 @@ export function useBooking(): UseBookingResult {
             });
 
             if (authError) {
-                // Status 400 es comun para 'User already registered' u otros errores de validación.
-                // Como las validaciones de front son fuertes (Zod), un error aquí 99% será colisión de correo
-                if (!authError.message.toLowerCase().includes('already registered') && authError.status !== 400) {
-                     console.error('Error de Auth no esperado:', authError);
-                     throw authError;
+                // Permitimos continuar SOLO si el error es que el usuario ya existe (recurrente)
+                const isAlreadyRegistered = authError.message.toLowerCase().includes('already registered') || 
+                                          authError.message.toLowerCase().includes('user already exists');
+                
+                if (!isAlreadyRegistered) {
+                     console.error('Error Crítico de Auth:', authError);
+                     throw new Error(`Restricción del servidor (Auth): ${authError.message}`);
                 }
             } else if (authData?.user) {
                 newUserId = authData.user.id;
