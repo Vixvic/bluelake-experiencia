@@ -18,7 +18,7 @@ export const ViewLiveSiteButton: React.FC = () => {
         <Button
             variant="outline"
             onClick={handleNavigate}
-            className="hidden md:flex gap-2 items-center bg-white hover:bg-slate-100 text-slate-700 font-medium shadow-sm border border-slate-200"
+            className="w-full sm:w-auto flex gap-2 items-center justify-center bg-white hover:bg-slate-100 text-slate-700 font-medium shadow-sm border border-slate-200"
             title="Ver sitio público en vivo"
         >
             <Eye className="w-4 h-4" />

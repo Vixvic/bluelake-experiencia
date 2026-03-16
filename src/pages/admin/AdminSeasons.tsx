@@ -85,7 +85,7 @@ const AdminSeasons: React.FC = () => {
         <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
           <Settings className="w-4 h-4 text-primary" /> Modo de Control
         </h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {['auto', 'manual'].map((mode) => (
             <button
               key={mode}
@@ -109,7 +109,7 @@ const AdminSeasons: React.FC = () => {
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <Zap className="w-4 h-4 text-accent-orange" /> Forzar Temporada
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[
               { key: 'winter', label: 'Invierno Amazónico', icon: Snowflake, color: 'text-primary', bg: 'bg-primary/5', border: 'border-primary' },
               { key: 'summer', label: 'Verano Amazónico', icon: Sun, color: 'text-accent-orange', bg: 'bg-accent-orange/5', border: 'border-accent-orange' },

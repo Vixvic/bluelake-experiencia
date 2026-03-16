@@ -174,14 +174,14 @@ const AdminDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-foreground">Resumen del Día</h1>
           <p className="text-sm text-muted-foreground">Bienvenido de nuevo, administrador.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full sm:w-auto gap-3 mt-4 sm:mt-0">
           <ViewLiveSiteButton />
-          <Button variant="outline" size="sm" className="gap-2" onClick={exportReport}>
+          <Button variant="outline" size="sm" className="gap-2 w-full sm:w-auto justify-center" onClick={exportReport}>
             <FileDown className="w-4 h-4" />
             Exportar Reporte
           </Button>
-          <Link to="/admin/bookings">
-            <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+          <Link to="/admin/bookings" className="w-full sm:w-auto">
+            <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 w-full justify-center">
               <Plus className="w-4 h-4" />
               Nueva Reserva
             </Button>
@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* Control de Estado del Río */}
       <div className="bg-card rounded-2xl border border-border p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Droplets className="w-5 h-5 text-primary" />
@@ -267,7 +267,7 @@ const AdminDashboard: React.FC = () => {
             Actual: {seasonMode === 'auto' ? 'Automático' : seasonMode === 'vaciante' ? 'Vaciante' : 'Creciente'}
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[
             { value: 'auto', label: 'Automático', desc: 'Basado en fecha del servidor' },
             { value: 'vaciante', label: 'Manual: Vaciante', desc: 'Temporada seca (Playas visibles)' },
@@ -301,21 +301,21 @@ const AdminDashboard: React.FC = () => {
       {/* Bottom section: Últimas Reservas */}
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="p-6 pb-0">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <h3 className="text-lg font-semibold text-foreground">Últimas Reservas</h3>
-            <div className="flex items-center gap-3">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar cliente..."
                   value={searchQuery}
                   onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  className="pl-9 h-9 w-52 text-sm"
+                  className="pl-9 h-9 w-full sm:w-52 text-sm"
                 />
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 text-sm">
+                  <Button variant="outline" size="sm" className="gap-2 text-sm w-full sm:w-auto justify-center">
                     <SlidersHorizontal className="w-4 h-4" />
                     Filtros {statusFilter !== 'all' && <span className="w-2 h-2 rounded-full bg-primary" />}
                   </Button>
@@ -345,7 +345,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[600px]">
             <thead className="border-y border-border bg-muted/30">
               <tr>
                 {['CLIENTE', 'TOUR', 'FECHA', 'ESTADO'].map(h => (
@@ -393,15 +393,15 @@ const AdminDashboard: React.FC = () => {
 
         {/* Pagination */}
         {filteredBookings.length > 0 && (
-          <div className="px-6 py-4 border-t border-border flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+          <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-sm text-muted-foreground text-center sm:text-left">
               Mostrando {showingFrom} a {showingTo} de {filteredBookings.length} resultados
             </span>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-full sm:w-auto">
                 Atrás
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="w-full sm:w-auto">
                 Siguiente
               </Button>
             </div>
