@@ -24,72 +24,95 @@ export function useBooking(): UseBookingResult {
     const submitBooking = async (data: BookingFormData, selectedDates: Date[], tour: BookingTour, total: number, toPay: number) => {
         setSubmitError('');
         try {
-            // Contraseña temporal: "Bluelake" + DNI (cumple Mayus + minus + nums)
-            const tempPassword = `Bluelake${data.document_number}`;
-            setTempPassword(tempPassword);
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASO 0: Preparar datos
+            // ═══════════════════════════════════════════════════════════════════════
+            const pwd = `Bluelake${data.document_number}`;
+            setTempPassword(pwd);
             setCustomerEmail(data.customer_email);
-            let newUserId: string | null = null;
-            let finalIsRecurring = false;
 
-            // ── PASO 1: Registrar usuario en Auth ─────────────────────────────────────────
-            // Usamos la misma lógica limpia de Login.tsx que funciona perfectamente.
-            const { data: authData, error: signUpError } = await supabase.auth.signUp({
-                email: data.customer_email,
-                password: tempPassword,
-                options: {
-                    data: {
-                        full_name: data.customer_name,
-                        document_type: data.document_type,
-                        document_number: data.document_number,
-                        phone: data.customer_phone,
-                    },
-                },
+            let userId: string | null = null;
+            let recurring = false;
+
+            // Convertir fechas Date → strings 'YYYY-MM-DD' (evita problemas de timezone)
+            const dateStrings = selectedDates.map(d => {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
             });
 
-            if (signUpError) {
-                const errMsg = signUpError.message.toLowerCase();
-                const errStatus = (signUpError as any).status;
-                console.error('[useBooking] signUp error:', signUpError.status, signUpError.message);
+            console.log('[BL] ── Inicio de reserva ──');
+            console.log('[BL] Email:', data.customer_email, '| DNI:', data.document_number);
+            console.log('[BL] Fechas:', dateStrings);
 
-                // Detectar: usuario ya existe OR rate limit OR email de burner
-                const isAlreadyRegistered = errMsg.includes('already registered') || errMsg.includes('user already exists');
-                const isRateLimit = errMsg.includes('rate') || errMsg.includes('limit') || errStatus === 429 || errStatus === 422;
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASO 1: Crear cuenta (signUp) — NUNCA debe detener la reserva
+            // ═══════════════════════════════════════════════════════════════════════
+            try {
+                console.log('[BL] PASO 1: Intentando signUp...');
+                const { data: authData, error: signUpErr } = await supabase.auth.signUp({
+                    email: data.customer_email,
+                    password: pwd,
+                    options: {
+                        data: {
+                            full_name: data.customer_name,
+                            document_type: data.document_type,
+                            document_number: data.document_number,
+                            phone: data.customer_phone,
+                        },
+                    },
+                });
 
-                if (isAlreadyRegistered || isRateLimit) {
-                    // Intentar signIn para obtener user_id (puede que ya esté registrado)
-                    finalIsRecurring = isAlreadyRegistered;
-                    const { data: signInData } = await supabase.auth.signInWithPassword({
-                        email: data.customer_email,
-                        password: tempPassword,
-                    });
-                    if (signInData?.user) {
-                        newUserId = signInData.user.id;
+                if (signUpErr) {
+                    console.warn('[BL] signUp falló:', signUpErr.status, signUpErr.message);
+
+                    // Intentar signIn para obtener user_id del usuario existente
+                    const msg = signUpErr.message.toLowerCase();
+                    if (msg.includes('already') || msg.includes('exists') || msg.includes('registered')) {
+                        recurring = true;
+                        console.log('[BL] → Usuario ya existe, intentando signIn...');
+                        try {
+                            const { data: loginData } = await supabase.auth.signInWithPassword({
+                                email: data.customer_email,
+                                password: pwd,
+                            });
+                            if (loginData?.user) {
+                                userId = loginData.user.id;
+                                console.log('[BL] → signIn OK, user_id:', userId);
+                            } else {
+                                console.warn('[BL] → signIn no devolvió usuario');
+                            }
+                        } catch (signInErr) {
+                            console.warn('[BL] → signIn falló:', signInErr);
+                        }
+                    } else {
+                        // Otro error (rate limit, network, etc.) — seguimos sin user_id
+                        console.warn('[BL] → Error no-recoverable en signUp, continuamos sin user_id');
                     }
+                } else if (authData?.user) {
+                    userId = authData.user.id;
+                    recurring = false;
+                    console.log('[BL] signUp OK, nuevo user_id:', userId);
                 } else {
-                    // Error real del servidor → lo propagamos
-                    throw new Error(`Error al crear la cuenta: ${signUpError.message}`);
+                    // signUp sin error pero sin user (usuario ya existe con confirm pendiente)
+                    console.warn('[BL] signUp sin error y sin user — posible usuario fantasma');
                 }
-            } else if (authData?.user) {
-                // Usuario NUEVO creado correctamente
-                newUserId = authData.user.id;
-                finalIsRecurring = false;
-                console.log('[useBooking] nuevo usuario creado:', authData.user.id);
-            } else {
-                // signUp sin error pero sin usuario (email ya confirmado vs. deshabilitado?)
-                console.warn('[useBooking] signUp sin error pero user es null');
+            } catch (authCrash) {
+                // Si signUp crashea completamente, no detenemos la reserva
+                console.error('[BL] signUp crasheó:', authCrash);
             }
 
-            // ── PASO 2: Guardar la reserva en la base de datos ────────────────────────────
-            // Convertir Date objects a strings 'YYYY-MM-DD' para evitar problemas de timezone
-            const datesAsStrings = selectedDates.map(d => {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            });
-            const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('create_booking_transaction', {
+            console.log('[BL] PASO 1 completado. user_id:', userId || 'NULL', '| recurrente:', recurring);
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASO 2: Guardar la reserva — SIEMPRE debe ejecutarse
+            // ═══════════════════════════════════════════════════════════════════════
+            console.log('[BL] PASO 2: Llamando RPC create_booking_transaction...');
+
+            const rpcParams = {
                 p_tour_id: tour.id,
-                p_dates: datesAsStrings,
+                p_dates: dateStrings,
                 p_adults: data.adults,
                 p_children: data.children,
                 p_total_amount: total,
@@ -101,36 +124,48 @@ export function useBooking(): UseBookingResult {
                 p_document_type: data.document_type,
                 p_document_number: data.document_number,
                 p_notes: data.notes || '',
-                p_user_id: newUserId,
-            });
+                p_user_id: userId,
+            };
 
-            if (rpcError) throw rpcError;
+            console.log('[BL] RPC params:', JSON.stringify(rpcParams, null, 2));
 
-            const resultObj = rpcData as any;
-            if (resultObj?.is_recurring_customer !== undefined) {
-                finalIsRecurring = !!resultObj.is_recurring_customer;
+            const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
+                'create_booking_transaction',
+                rpcParams
+            );
+
+            if (rpcError) {
+                console.error('[BL] RPC ERROR:', rpcError.message, rpcError.code, rpcError.details);
+                throw new Error(`Error al guardar la reserva: ${rpcError.message}`);
             }
-            setIsRecurring(finalIsRecurring);
 
-            // ── PASO 3: Generar link de WhatsApp ──────────────────────────────────────────
-            const reservationCode = resultObj?.booking_id || 'BL' + Date.now();
+            console.log('[BL] RPC OK:', JSON.stringify(rpcResult));
+
+            // Actualizar estado
+            const result = rpcResult as any;
+            if (result?.is_recurring_customer !== undefined) {
+                recurring = !!result.is_recurring_customer;
+            }
+            setIsRecurring(recurring);
+
+            // ═══════════════════════════════════════════════════════════════════════
+            // PASO 3: WhatsApp
+            // ═══════════════════════════════════════════════════════════════════════
+            const bookingCode = result?.booking_id || 'BL' + Date.now();
             const message = buildWhatsAppMessage(
-                tour,
-                data,
-                selectedDates,
-                total,
-                toPay,
+                tour, data, selectedDates, total, toPay,
                 data.customer_email,
-                finalIsRecurring ? null : tempPassword,
-                reservationCode,
-                finalIsRecurring
+                recurring ? null : pwd,
+                bookingCode,
+                recurring
             );
 
             setWhatsAppUrl(`https://wa.me/${BLUELAKE_WP}?text=${message}`);
             setSubmitted(true);
+            console.log('[BL] ── Reserva completada exitosamente ──');
 
         } catch (err: any) {
-            console.error('Error en reserva:', err);
+            console.error('[BL] ERROR FINAL:', err);
             setSubmitError(err.message || 'Ocurrió un error guardando la reserva. Por favor intenta de nuevo.');
         }
     };
