@@ -62,7 +62,7 @@ const ClientDashboard: React.FC = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        navigate('/client/login');
+        navigate('/login');
     };
 
     const buildSupportMessage = (b: Booking) => {

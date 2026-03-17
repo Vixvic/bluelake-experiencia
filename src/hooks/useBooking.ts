@@ -160,7 +160,7 @@ export function useBooking(): UseBookingResult {
                 recurring
             );
 
-            setWhatsAppUrl(`https://wa.me/${BLUELAKE_WP}?text=${message}`);
+            setWhatsAppUrl(`https://wa.me/${data.customer_phone?.replace(/\D/g, '')}?text=${message}`);
             setSubmitted(true);
             console.log('[BL] ── Reserva completada exitosamente ──');
 

@@ -3,14 +3,15 @@ import { es } from 'date-fns/locale';
 
 export interface BookingTour {
     id: string;
+    slug?: string;
     title_es: string;
     title_en: string;
     base_price: number;
     child_price?: number | null;
     max_capacity: number;
     current_bookings: number;
-    category: string;
-    season: string;
+    category?: string;
+    season?: string;
     image_url?: string;
 }
 
