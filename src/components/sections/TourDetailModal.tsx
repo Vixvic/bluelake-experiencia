@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun, ChevronDown } from 'lucide-react';
+import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun, ChevronDown, Copy } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { useBooking } from '@/hooks/useBooking';
 
 interface Tour {
   id: string;
@@ -60,9 +60,13 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
   const { t, i18n } = useTranslation();
   const { formatPrice } = useCurrency();
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState('');
   const [showBookingForm, setShowBookingForm] = useState(false);
+
+  // ═══ USAR EL HOOK BLINDADO QUE HACE signUp + RPC + WhatsApp ═══
+  const {
+    submitBooking, submitted, submitError,
+    whatsAppUrl, isRecurring, tempPassword, customerEmail
+  } = useBooking();
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -95,30 +99,24 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
   };
 
   const onSubmit = async (data: BookingFormData) => {
-    if (selectedDates.length === 0) {
-      setSubmitError('Debes seleccionar al menos una fecha');
-      return;
-    }
-    setSubmitError('');
-    const { error } = await supabase.from('bookings').insert({
-      tour_id: tour.id,
-      dates: selectedDates.map(d => format(d, 'yyyy-MM-dd')),
-      adults: data.adults,
-      children: data.children,
-      total_amount: total,
-      payment_mode: data.payment_mode,
-      payment_method: data.payment_method,
-      card_fee: cardFee,
-      customer_name: data.customer_name,
-      customer_email: data.customer_email,
-      customer_phone: data.customer_phone || null,
-      document_type: data.document_type,
-      document_number: data.document_number,
-      notes: data.notes || null,
-      status: 'pending',
-    });
-    if (error) setSubmitError(t('booking.error'));
-    else setSubmitted(true);
+    if (selectedDates.length === 0) return;
+    // Usar el hook blindado que hace: signUp → RPC → WhatsApp
+    await submitBooking(
+      data,
+      selectedDates,
+      {
+        id: tour.id,
+        slug: tour.slug,
+        title_es: tour.title_es,
+        title_en: tour.title_en,
+        base_price: tour.base_price,
+        child_price: tour.child_price || 0,
+        max_capacity: tour.max_capacity,
+        current_bookings: tour.current_bookings,
+      },
+      total,
+      toPay
+    );
   };
 
   const getSeasonLabel = (season: string) => {
@@ -301,11 +299,38 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
             {/* Right: Booking panel */}
             <div className={`lg:col-span-2 border-t lg:border-t-0 lg:border-l border-border bg-secondary/30 p-6 md:p-8 ${!showBookingForm ? 'hidden lg:block' : ''}`}>
               {submitted ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 rounded-full bg-jungle/10 flex items-center justify-center mx-auto mb-4">
+                <div className="text-center py-6 space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-jungle/10 flex items-center justify-center mx-auto mb-2">
                     <CheckCircle2 className="w-8 h-8 text-jungle" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">{t('booking.success')}</h3>
+                  <h3 className="text-xl font-bold text-foreground">{t('booking.success')}</h3>
+
+                  {!isRecurring && tempPassword && (
+                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-left space-y-2">
+                      <p className="text-sm font-semibold text-primary">Tu cuenta ha sido creada:</p>
+                      <div className="flex items-center justify-between bg-background rounded-lg px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Email:</span>
+                        <span className="text-sm font-mono font-medium">{customerEmail}</span>
+                      </div>
+                      <div className="flex items-center justify-between bg-background rounded-lg px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Contraseña:</span>
+                        <span className="text-sm font-mono font-medium">{tempPassword}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Guarda estos datos para acceder al portal de clientes.</p>
+                    </div>
+                  )}
+
+                  {whatsAppUrl && (
+                    <a
+                      href={whatsAppUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+                    >
+                      Confirmar por WhatsApp
+                    </a>
+                  )}
+
                   <p className="text-muted-foreground text-sm">
                     {i18n.language === 'es' ? 'Te contactaremos a tu email para confirmar.' : 'We will contact you via email to confirm.'}
                   </p>
