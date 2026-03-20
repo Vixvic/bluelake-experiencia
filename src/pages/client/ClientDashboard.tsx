@@ -1,11 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { CalendarDays, Clock, Users, CheckCircle2, AlertCircle, Loader2, LogOut, User, MapPin, MessageCircle } from 'lucide-react';
+import { CalendarDays, Clock, Users, CheckCircle2, AlertCircle, Loader2, LogOut, MapPin, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const BLUELAKE_WP = '51996130193';
+
+const AVATAR_COLORS = [
+    'bg-emerald-500', 'bg-sky-500', 'bg-violet-500', 'bg-amber-500',
+    'bg-rose-500', 'bg-teal-500', 'bg-indigo-500', 'bg-orange-500',
+];
+
+function getAvatarColor(name: string) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitials(name: string): string {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return (parts[0]?.[0] || '?').toUpperCase();
+}
 
 interface Booking {
     id: string;
@@ -25,6 +42,8 @@ interface Booking {
 interface Profile {
     full_name: string;
     role: string;
+    phone: string | null;
+    avatar_url: string | null;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -37,15 +56,21 @@ const ClientDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [userEmail, setUserEmail] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { navigate('/client/login'); return; }
+            if (!user) { navigate('/login'); return; }
+
+            setUserEmail(user.email || '');
+
+            // Intentar obtener avatar_url del metadata de Supabase Auth
+            const authAvatarUrl = user.user_metadata?.avatar_url || null;
 
             const [{ data: profileData }, { data: bookingData }] = await Promise.all([
-                supabase.from('profiles').select('full_name, role').eq('id', user.id).single(),
+                supabase.from('profiles').select('full_name, phone').eq('id', user.id).maybeSingle(),
                 supabase
                     .from('bookings')
                     .select('*, tours(title_es, image_url, category)')
@@ -53,7 +78,17 @@ const ClientDashboard: React.FC = () => {
                     .order('created_at', { ascending: false }),
             ]);
 
-            setProfile(profileData);
+            // Fallback: si no hay perfil en la tabla, usar metadata de Supabase Auth
+            const authName = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+
+            const enrichedProfile: Profile = {
+                full_name: profileData?.full_name || authName,
+                role: 'client',
+                phone: profileData?.phone || null,
+                avatar_url: authAvatarUrl,
+            };
+
+            setProfile(enrichedProfile);
             setBookings(bookingData || []);
             setLoading(false);
         };
@@ -96,10 +131,20 @@ const ClientDashboard: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <Link
                             to="/client/profile"
-                            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
-                            <User className="w-4 h-4" />
-                            <span className="hidden sm:inline">{profile?.full_name?.split(' ')[0] || 'Perfil'}</span>
+                            {profile?.avatar_url ? (
+                                <img
+                                    src={profile.avatar_url}
+                                    alt={profile.full_name}
+                                    className="w-7 h-7 rounded-full object-cover ring-2 ring-primary/20"
+                                />
+                            ) : (
+                                <div className={`w-7 h-7 rounded-full ${getAvatarColor(profile?.full_name || '')} flex items-center justify-center text-white text-xs font-bold ring-2 ring-primary/20`}>
+                                    {getInitials(profile?.full_name || 'U')}
+                                </div>
+                            )}
+                            <span className="hidden sm:inline font-medium">{profile?.full_name?.split(' ')[0] || 'Perfil'}</span>
                         </Link>
                         <button
                             onClick={handleLogout}
@@ -114,11 +159,28 @@ const ClientDashboard: React.FC = () => {
 
             <main className="max-w-4xl mx-auto px-4 py-8">
                 {/* Welcome */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-black text-foreground">
-                        ¡Hola, {profile?.full_name?.split(' ')[0] || 'viajero'}! 👋
-                    </h1>
-                    <p className="text-muted-foreground mt-1">Aquí puedes ver el estado de tus experiencias reservadas.</p>
+                <div className="mb-8 flex items-center gap-4">
+                    {/* Avatar grande */}
+                    {profile?.avatar_url ? (
+                        <img
+                            src={profile.avatar_url}
+                            alt={profile.full_name}
+                            className="w-14 h-14 rounded-full object-cover ring-4 ring-primary/20 shrink-0"
+                        />
+                    ) : (
+                        <div className={`w-14 h-14 rounded-full ${getAvatarColor(profile?.full_name || '')} flex items-center justify-center text-white text-xl font-bold ring-4 ring-primary/20 shrink-0`}>
+                            {getInitials(profile?.full_name || 'U')}
+                        </div>
+                    )}
+                    <div>
+                        <h1 className="text-2xl font-black text-foreground">
+                            ¡Hola, {profile?.full_name?.split(' ')[0] || 'viajero'}! 👋
+                        </h1>
+                        <p className="text-muted-foreground mt-0.5 text-sm">
+                            {userEmail && <span className="text-xs text-muted-foreground/70">{userEmail} · </span>}
+                            Aquí puedes ver el estado de tus experiencias reservadas.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Bookings */}
