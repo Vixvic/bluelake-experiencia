@@ -118,7 +118,7 @@ const ClientDashboard: React.FC = () => {
             {/* Header */}
             <header className="border-b border-border bg-card sticky top-0 z-40">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-2">
+                    <Link to="/client/dashboard" className="flex items-center gap-2">
                         <img
                             src="/bluelake-experiencia/logo-bluelake.png"
                             alt="Bluelake"

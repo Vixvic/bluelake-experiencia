@@ -6,6 +6,7 @@ import { Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
+import logo from '@/assets/logo-bluelake.png';
 
 const UpdatePassword: React.FC = () => {
     const navigate = useNavigate();
@@ -95,20 +96,26 @@ const UpdatePassword: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="min-h-screen bg-primary-deep flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 
                 <div className="text-center mb-8">
-                    <ShieldCheck className="w-16 h-16 mx-auto mb-4 text-primary" />
-                    <h1 className="text-2xl font-black text-foreground">
+                    <div className="inline-block mb-6 flex items-center justify-center">
+                        <img
+                            src={logo}
+                            alt="Bluelake Logo"
+                            className="h-16 w-auto object-contain"
+                        />
+                    </div>
+                    <h1 className="text-2xl font-bold text-white">
                         Actualiza tu Seguridad
                     </h1>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-white/70 text-sm mt-2">
                         Como usaste una contraseña temporal enviada por WhatsApp, te pedimos que la cambies por una propia antes de continuar.
                     </p>
                 </div>
 
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-bluelake">
+                <div className="bg-white rounded-2xl p-8 shadow-lg">
                     <form onSubmit={handleUpdate} className="space-y-4">
                         <div>
                             <label className="text-sm font-semibold text-foreground mb-1.5 block">Nueva Contraseña</label>
