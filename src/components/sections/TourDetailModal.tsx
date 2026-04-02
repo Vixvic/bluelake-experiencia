@@ -43,18 +43,18 @@ interface TourDetailModalProps {
 const bookingSchema = z.object({
   customer_name: z.string().min(2, 'Nombre requerido'),
   customer_email: z.string().email('Email inválido'),
-  customer_phone: z.string().optional(),
+  customer_phone: z.string().min(6, 'Teléfono requerido'),
   adults: z.coerce.number().min(1).max(20),
   children: z.coerce.number().min(0).max(20),
   document_type: z.enum(['DNI', 'CE', 'Pasaporte']),
   document_number: z.string().min(5, 'Documento inválido'),
-  payment_method: z.enum(['transfer', 'card']),
+  payment_method: z.enum(['transfer', 'yape_plin', 'card']),
   payment_mode: z.enum(['full', 'partial']),
   notes: z.string().optional(),
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
-const CARD_FEE = 0.06;
+import { CARD_FEE_RATE } from '@/utils/whatsapp-helper';
 
 const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
   const { t, i18n } = useTranslation();
@@ -84,7 +84,7 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
   const paymentMethod = watch('payment_method');
   const paymentMode = watch('payment_mode');
   const subtotal = (adults * tour.base_price) + (children * (tour.child_price || 0));
-  const cardFee = paymentMethod === 'card' ? subtotal * CARD_FEE : 0;
+  const cardFee = paymentMethod === 'card' ? subtotal * CARD_FEE_RATE : 0;
   const total = subtotal + cardFee;
   const toPay = paymentMode === 'partial' ? total * 0.5 : total;
 
@@ -392,18 +392,22 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                   </div>
 
                   {/* Payment */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {['transfer', 'card'].map((method) => (
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'transfer', label: 'Transferencia' },
+                      { value: 'yape_plin', label: 'Yape / Plin' },
+                      { value: 'card', label: 'Tarjeta (+6%)' },
+                    ].map(({ value, label }) => (
                       <label
-                        key={method}
-                        className={`flex items-center gap-1.5 p-2.5 rounded-xl border-2 cursor-pointer transition-all text-xs ${watch('payment_method') === method ? 'border-primary bg-primary/5' : 'border-border'
+                        key={value}
+                        className={`flex items-center gap-1.5 p-2.5 rounded-xl border-2 cursor-pointer transition-all text-xs ${watch('payment_method') === value ? 'border-primary bg-primary/5' : 'border-border'
                           }`}
                       >
-                        <input type="radio" value={method} {...register('payment_method')} className="sr-only" />
-                        <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${watch('payment_method') === method ? 'border-primary' : 'border-muted-foreground'}`}>
-                          {watch('payment_method') === method && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                        <input type="radio" value={value} {...register('payment_method')} className="sr-only" />
+                        <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center shrink-0 ${watch('payment_method') === value ? 'border-primary' : 'border-muted-foreground'}`}>
+                          {watch('payment_method') === value && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
                         </div>
-                        <span className="font-medium">{method === 'transfer' ? t('booking.transfer') : t('booking.card')}</span>
+                        <span className="font-medium">{label}</span>
                       </label>
                     ))}
                   </div>
@@ -467,7 +471,8 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                       />
                     </div>
                     <Input {...register('customer_email')} type="email" placeholder={t('booking.email')} className={cn("h-9", errors.customer_email && 'border-destructive')} />
-                    <Input {...register('customer_phone')} placeholder={t('booking.phone')} className="h-9" />
+                    <Input {...register('customer_phone')} placeholder={t('booking.phone')} className={cn("h-9", errors.customer_phone && 'border-destructive')} />
+                    {errors.customer_phone && <p className="text-xs text-destructive">{errors.customer_phone.message}</p>}
                     <Textarea {...register('notes')} placeholder={t('booking.notes')} rows={2} className="resize-none" />
                   </div>
 

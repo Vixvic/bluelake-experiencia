@@ -13,7 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { BookingTour, BookingFormData } from '@/utils/whatsapp-helper';
+import { BookingTour, BookingFormData, CARD_FEE_RATE } from '@/utils/whatsapp-helper';
 import { useBooking } from '@/hooks/useBooking';
 
 interface BookingFormProps {
@@ -30,7 +30,7 @@ const getBookingSchema = (maxCapacity: number) => z.object({
     document_number: z.string().min(5, 'Documento requerido'),
     adults: z.coerce.number().min(1).max(20),
     children: z.coerce.number().min(0).max(20),
-    payment_method: z.enum(['transfer', 'yape_plin']),
+    payment_method: z.enum(['transfer', 'yape_plin', 'card']),
     payment_mode: z.enum(['full', 'partial']),
     notes: z.string().optional(),
 }).refine(data => (data.adults + data.children) <= maxCapacity, {
@@ -70,7 +70,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
     const watchAll = watch();
 
     const subtotal = (adults * tour.base_price) + (children * (tour.child_price || 0));
-    const total = subtotal;
+    const cardFee = paymentMethod === 'card' ? subtotal * CARD_FEE_RATE : 0;
+    const total = subtotal + cardFee;
     const toPay = paymentMode === 'partial' ? total * 0.5 : total;
 
     const handleDateSelect = (date: Date | undefined) => {
@@ -212,20 +213,21 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
             {/* Payment method */}
             <div>
                 <label className="text-sm font-semibold text-foreground mb-2 block">{t('booking.paymentMethod')}</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                     {[
-                        { value: 'transfer', label: 'Transferencia (0%)' },
+                        { value: 'transfer', label: 'Transferencia' },
                         { value: 'yape_plin', label: 'Yape / Plin' },
+                        { value: 'card', label: 'Tarjeta (+6%)' },
                     ].map(({ value, label }) => (
                         <label
                             key={value}
                             className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${watchAll.payment_method === value ? 'border-primary bg-primary/5' : 'border-border'}`}
                         >
                             <input type="radio" value={value} {...register('payment_method')} className="sr-only" />
-                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${watchAll.payment_method === value ? 'border-primary' : 'border-muted-foreground'}`}>
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${watchAll.payment_method === value ? 'border-primary' : 'border-muted-foreground'}`}>
                                 {watchAll.payment_method === value && <div className="w-2 h-2 rounded-full bg-primary" />}
                             </div>
-                            <span className="text-sm font-medium">{label}</span>
+                            <span className="text-xs font-medium">{label}</span>
                         </label>
                     ))}
                 </div>
@@ -260,6 +262,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                     <span className="text-muted-foreground">{t('booking.subtotal')}</span>
                     <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
+                {cardFee > 0 && (
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Recargo tarjeta (6%)</span>
+                        <span className="font-medium text-amber-600">+ {formatPrice(cardFee)}</span>
+                    </div>
+                )}
                 <div className="border-t border-border pt-2 flex justify-between">
                     <span className="font-semibold text-foreground">{t('booking.total')}</span>
                     <span className="font-bold text-primary text-lg">{formatPrice(total)}</span>

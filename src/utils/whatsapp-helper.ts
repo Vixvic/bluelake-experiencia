@@ -23,14 +23,15 @@ export interface BookingFormData {
     document_number: string;
     adults: number;
     children: number;
-    payment_method: 'transfer' | 'yape_plin';
+    payment_method: 'transfer' | 'yape_plin' | 'card';
     payment_mode: 'full' | 'partial';
     notes?: string;
 }
 
 export const BLUELAKE_WP = '51996130193'; // sin + ni espacios
 
-
+/** Recargo aplicado al monto cuando el cliente elige pago con tarjeta */
+export const CARD_FEE_RATE = 0.06;
 
 export function buildWhatsAppMessage(
     tour: BookingTour,
@@ -44,7 +45,11 @@ export function buildWhatsAppMessage(
     isRecurring: boolean
 ): string {
     const dateList = dates.map(d => format(d, 'dd/MM/yyyy', { locale: es })).join(', ');
-    const method = data.payment_method === 'transfer' ? 'Transferencia bancaria' : 'Yape/Plin';
+    const method = data.payment_method === 'transfer'
+        ? 'Transferencia bancaria'
+        : data.payment_method === 'yape_plin'
+            ? 'Yape / Plin'
+            : 'Tarjeta (+6%)';
     const mode = data.payment_mode === 'partial' ? 'Pago parcial (50%)' : 'Pago completo';
     const portalUrl = `https://vixvic.github.io/bluelake-experiencia/login`;
 
