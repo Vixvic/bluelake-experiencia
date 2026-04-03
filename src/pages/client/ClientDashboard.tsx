@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { CalendarDays, Clock, Users, CheckCircle2, AlertCircle, Loader2, LogOut, MapPin, MessageCircle } from 'lucide-react';
+import { CalendarDays, Clock, Users, CheckCircle2, AlertCircle, Loader2, LogOut, MapPin, MessageCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -58,6 +58,8 @@ const ClientDashboard: React.FC = () => {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [userEmail, setUserEmail] = useState('');
     const [loading, setLoading] = useState(true);
+    const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -105,6 +107,23 @@ const ClientDashboard: React.FC = () => {
         const id = b.id.slice(-6).toUpperCase();
         const msg = `Hola Bluelake 👋, soy ${profile?.full_name} y tengo una consulta sobre mi reserva #${id} (${tourName}).`;
         return `https://wa.me/${BLUELAKE_WP}?text=${encodeURIComponent(msg)}`;
+    };
+
+    const handleCancelBooking = async () => {
+        if (!cancelTarget) return;
+        setCancelling(true);
+        const { error } = await supabase
+            .from('bookings')
+            .update({ status: 'cancelled' })
+            .eq('id', cancelTarget.id);
+        setCancelling(false);
+        setCancelTarget(null);
+        if (!error) {
+            // Actualizar lista local sin recargar
+            setBookings(prev => prev.map(b =>
+                b.id === cancelTarget.id ? { ...b, status: 'cancelled' } : b
+            ));
+        }
     };
 
     if (loading) return (
@@ -263,8 +282,17 @@ const ClientDashboard: React.FC = () => {
                                             </div>
 
                                             {booking.status === 'pending' && (
-                                                <div className="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-lg p-2.5">
-                                                    ⏳ <strong>Pago pendiente.</strong> Envía tu comprobante de pago por WhatsApp para confirmar tu reserva.
+                                                <div className="space-y-2">
+                                                    <div className="text-xs bg-amber-50 text-amber-700 border border-amber-200 rounded-lg p-2.5">
+                                                        ⏳ <strong>Pago pendiente.</strong> Envía tu comprobante de pago por WhatsApp para confirmar tu reserva.
+                                                    </div>
+                                                    <button
+                                                        onClick={() => setCancelTarget(booking)}
+                                                        className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors"
+                                                    >
+                                                        <XCircle className="w-3.5 h-3.5" />
+                                                        Cancelar reserva
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
@@ -291,6 +319,43 @@ const ClientDashboard: React.FC = () => {
                     </Link>
                 </div>
             </main>
+
+            {/* Modal de confirmación de cancelación */}
+            {cancelTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-card rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="text-center">
+                            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-3">
+                                <AlertCircle className="w-6 h-6 text-destructive" />
+                            </div>
+                            <h3 className="text-lg font-bold text-foreground">¿Cancelar reserva?</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Estás a punto de cancelar tu reserva <strong className="text-foreground">#{cancelTarget.id.slice(-6).toUpperCase()}</strong> para <strong className="text-foreground">{cancelTarget.tours?.title_es || 'esta experiencia'}</strong>.
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                                Esta acción no se puede deshacer. Si necesitas ayuda, contáctanos por WhatsApp.
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setCancelTarget(null)}
+                                disabled={cancelling}
+                                className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-secondary transition-colors disabled:opacity-50"
+                            >
+                                No, mantener
+                            </button>
+                            <button
+                                onClick={handleCancelBooking}
+                                disabled={cancelling}
+                                className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                            >
+                                {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                {cancelling ? 'Cancelando...' : 'Sí, cancelar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
