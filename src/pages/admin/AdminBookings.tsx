@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminCorporate from './AdminCorporate';
+import ManualBookingModal from '@/components/admin/ManualBookingModal';
 
 interface Booking {
   id: string;
@@ -63,6 +64,7 @@ const AdminBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [tours, setTours] = useState<{ id: string; title_es: string }[]>([]);
   const { toast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -219,7 +221,7 @@ const AdminBookings: React.FC = () => {
             <FileDown className="w-4 h-4" />
             Exportar CSV
           </Button>
-          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90" onClick={() => setIsModalOpen(true)}>
             <Plus className="w-4 h-4" />
             Nueva Reserva Manual
           </Button>
@@ -448,6 +450,15 @@ const AdminBookings: React.FC = () => {
           <AdminCorporate />
         </TabsContent>
       </Tabs>
+
+      <ManualBookingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          setIsModalOpen(false);
+          fetchBookings();
+        }}
+      />
     </div>
   );
 };
