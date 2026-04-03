@@ -48,7 +48,7 @@ const bookingSchema = z.object({
   children: z.coerce.number().min(0).max(20),
   document_type: z.enum(['DNI', 'CE', 'Pasaporte']),
   document_number: z.string().min(5, 'Documento inválido'),
-  payment_method: z.enum(['transfer', 'yape_plin', 'card']),
+  payment_method: z.enum(['transfer', 'yape', 'plin', 'card']),
   payment_mode: z.enum(['full', 'partial']),
   notes: z.string().optional(),
 });
@@ -392,10 +392,11 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                   </div>
 
                   {/* Payment */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { value: 'transfer', label: 'Transferencia' },
-                      { value: 'yape_plin', label: 'Yape / Plin' },
+                      { value: 'yape', label: 'Yape' },
+                      { value: 'plin', label: 'Plin' },
                       { value: 'card', label: 'Tarjeta (+6%)' },
                     ].map(({ value, label }) => (
                       <label

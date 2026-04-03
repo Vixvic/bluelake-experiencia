@@ -30,7 +30,7 @@ const getBookingSchema = (maxCapacity: number) => z.object({
     document_number: z.string().min(5, 'Documento requerido'),
     adults: z.coerce.number().min(1).max(20),
     children: z.coerce.number().min(0).max(20),
-    payment_method: z.enum(['transfer', 'yape_plin', 'card']),
+    payment_method: z.enum(['transfer', 'yape', 'plin', 'card']),
     payment_mode: z.enum(['full', 'partial']),
     notes: z.string().optional(),
 }).refine(data => (data.adults + data.children) <= maxCapacity, {
@@ -213,10 +213,11 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
             {/* Payment method */}
             <div>
                 <label className="text-sm font-semibold text-foreground mb-2 block">{t('booking.paymentMethod')}</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                     {[
                         { value: 'transfer', label: 'Transferencia' },
-                        { value: 'yape_plin', label: 'Yape / Plin' },
+                        { value: 'yape', label: 'Yape' },
+                        { value: 'plin', label: 'Plin' },
                         { value: 'card', label: 'Tarjeta (+6%)' },
                     ].map(({ value, label }) => (
                         <label
@@ -227,7 +228,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                             <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${watchAll.payment_method === value ? 'border-primary' : 'border-muted-foreground'}`}>
                                 {watchAll.payment_method === value && <div className="w-2 h-2 rounded-full bg-primary" />}
                             </div>
-                            <span className="text-xs font-medium">{label}</span>
+                            <span className="text-sm font-medium">{label}</span>
                         </label>
                     ))}
                 </div>

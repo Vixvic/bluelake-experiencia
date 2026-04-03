@@ -23,7 +23,7 @@ export interface BookingFormData {
     document_number: string;
     adults: number;
     children: number;
-    payment_method: 'transfer' | 'yape_plin' | 'card';
+    payment_method: 'transfer' | 'yape' | 'plin' | 'card';
     payment_mode: 'full' | 'partial';
     notes?: string;
 }
@@ -45,11 +45,13 @@ export function buildWhatsAppMessage(
     isRecurring: boolean
 ): string {
     const dateList = dates.map(d => format(d, 'dd/MM/yyyy', { locale: es })).join(', ');
-    const method = data.payment_method === 'transfer'
-        ? 'Transferencia bancaria'
-        : data.payment_method === 'yape_plin'
-            ? 'Yape / Plin'
-            : 'Tarjeta (+6%)';
+    const methodLabels: Record<string, string> = {
+        transfer: 'Transferencia bancaria',
+        yape: 'Yape',
+        plin: 'Plin',
+        card: 'Tarjeta (+6%)',
+    };
+    const method = methodLabels[data.payment_method] || data.payment_method;
     const mode = data.payment_mode === 'partial' ? 'Pago parcial (50%)' : 'Pago completo';
     const portalUrl = `https://vixvic.github.io/bluelake-experiencia/login`;
 
