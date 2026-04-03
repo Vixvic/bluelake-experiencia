@@ -35,6 +35,9 @@ interface Tour {
   images: string[];
   is_season_featured: boolean;
   video_url: string;
+  duration?: string;
+  included_items?: string[];
+  itinerary?: {time: string, activity: string}[];
 }
 
 const defaultTour: Partial<Tour> = {
@@ -54,6 +57,9 @@ const defaultTour: Partial<Tour> = {
   images: [],
   is_season_featured: false,
   video_url: '',
+  duration: '',
+  included_items: [],
+  itinerary: [],
 };
 
 const AdminTours: React.FC = () => {
@@ -99,7 +105,7 @@ const AdminTours: React.FC = () => {
   }, [editingTour, isNewTour]);
 
   const fetchTours = () => {
-    supabase.from('tours').select('id,slug,title_es,title_en,description_es,description_en,category,season,base_price,max_capacity,premium,visible,current_bookings,image_url,images,is_season_featured,video_url')
+    supabase.from('tours').select('id,slug,title_es,title_en,description_es,description_en,category,season,base_price,max_capacity,premium,visible,current_bookings,image_url,images,is_season_featured,video_url,duration,included_items,itinerary')
       .order('created_at', { ascending: false })
       .then(({ data }) => { setTours(data || []); setLoading(false); });
   };
@@ -305,6 +311,56 @@ const AdminTours: React.FC = () => {
     });
   };
 
+  const handleAddIncludedItem = () => {
+    setEditingTour(prev => {
+      if (!prev) return prev;
+      return { ...prev, included_items: [...(prev.included_items || []), ''] };
+    });
+  };
+
+  const updateIncludedItem = (index: number, value: string) => {
+    setEditingTour(prev => {
+      if (!prev || !prev.included_items) return prev;
+      const newItems = [...prev.included_items];
+      newItems[index] = value;
+      return { ...prev, included_items: newItems };
+    });
+  };
+
+  const removeIncludedItem = (index: number) => {
+    setEditingTour(prev => {
+      if (!prev || !prev.included_items) return prev;
+      const newItems = [...prev.included_items];
+      newItems.splice(index, 1);
+      return { ...prev, included_items: newItems };
+    });
+  };
+
+  const handleAddItineraryStep = () => {
+    setEditingTour(prev => {
+      if (!prev) return prev;
+      return { ...prev, itinerary: [...(prev.itinerary || []), { time: '', activity: '' }] };
+    });
+  };
+
+  const updateItineraryStep = (index: number, field: 'time' | 'activity', value: string) => {
+    setEditingTour(prev => {
+      if (!prev || !prev.itinerary) return prev;
+      const newItinerary = [...prev.itinerary];
+      newItinerary[index] = { ...newItinerary[index], [field]: value };
+      return { ...prev, itinerary: newItinerary };
+    });
+  };
+
+  const removeItineraryStep = (index: number) => {
+    setEditingTour(prev => {
+      if (!prev || !prev.itinerary) return prev;
+      const newItinerary = [...prev.itinerary];
+      newItinerary.splice(index, 1);
+      return { ...prev, itinerary: newItinerary };
+    });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTour) return;
@@ -328,6 +384,9 @@ const AdminTours: React.FC = () => {
         images: editingTour.images || [],
         is_season_featured: editingTour.is_season_featured || false,
         video_url: editingTour.video_url || '',
+        duration: editingTour.duration || '',
+        included_items: editingTour.included_items || [],
+        itinerary: editingTour.itinerary || [],
       });
       error = result.error;
     } else {
@@ -346,6 +405,9 @@ const AdminTours: React.FC = () => {
         images: editingTour.images || [],
         is_season_featured: editingTour.is_season_featured,
         video_url: editingTour.video_url,
+        duration: editingTour.duration,
+        included_items: editingTour.included_items,
+        itinerary: editingTour.itinerary,
       }).eq('id', editingTour.id);
       error = result.error;
     }
@@ -719,6 +781,69 @@ const AdminTours: React.FC = () => {
                   className="w-4 h-4 text-accent-orange rounded border-border"
                 />
                 <label htmlFor="premium-tour" className="text-sm font-medium flex items-center gap-1.5"><Star className="w-3.5 h-3.5 fill-accent-orange text-accent-orange" /> Destacar como experiencia Premium</label>
+              </div>
+
+              <div className="border-t border-border pt-4 mt-4">
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2"><Clock className="w-4 h-4 text-primary" /> Detalles Adicionales y Duración</h3>
+                <div className="mb-4">
+                  <label className="text-sm font-semibold mb-1 block">Duración del Tour (Ej: 4 a 5 hrs)</label>
+                  <Input 
+                    value={editingTour.duration || ''} 
+                    onChange={e => setEditingTour({...editingTour, duration: e.target.value})}
+                    placeholder="2 a 3 horas" 
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label className="text-sm font-semibold mb-1 block flex justify-between items-center">
+                    Lo que Incluye
+                    <button type="button" onClick={handleAddIncludedItem} className="text-xs text-primary font-bold hover:underline">
+                      + Añadir Item
+                    </button>
+                  </label>
+                  {(editingTour.included_items || []).map((item, index) => (
+                    <div key={index} className="flex gap-2 mb-2">
+                       <Input 
+                          value={item}
+                          onChange={e => updateIncludedItem(index, e.target.value)}
+                          placeholder="Ej: Recojo y traslado, Guía turístico"
+                          className="flex-1 text-sm"
+                       />
+                       <button type="button" onClick={() => removeIncludedItem(index)} className="p-2 bg-destructive/10 text-destructive rounded hover:bg-destructive/20 transition-colors">
+                         <Trash2 className="w-4 h-4" />
+                       </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                   <label className="text-sm font-semibold mb-1 block flex justify-between items-center">
+                    Línea de Tiempo del Itinerario
+                    <button type="button" onClick={handleAddItineraryStep} className="text-xs text-primary font-bold hover:underline">
+                      + Añadir Parada
+                    </button>
+                  </label>
+                  {(editingTour.itinerary || []).map((step, index) => (
+                    <div key={index} className="flex gap-2 mb-2 items-start">
+                       <Input 
+                          value={step.time}
+                          onChange={e => updateItineraryStep(index, 'time', e.target.value)}
+                          placeholder="09:00 AM"
+                          className="w-1/3 text-sm"
+                       />
+                       <Textarea 
+                          rows={2}
+                          value={step.activity}
+                          onChange={e => updateItineraryStep(index, 'activity', e.target.value)}
+                          placeholder="Visita al centro de rescate"
+                          className="flex-1 text-sm min-h-[40px]"
+                       />
+                       <button type="button" onClick={() => removeItineraryStep(index)} className="p-2 bg-destructive/10 text-destructive rounded hover:bg-destructive/20 transition-colors h-10 shrink-0">
+                         <Trash2 className="w-4 h-4" />
+                       </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="border-t border-border pt-4 mt-4">

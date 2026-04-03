@@ -265,6 +265,9 @@ export type Database = {
           visible: boolean | null
           is_season_featured: boolean | null
           video_url: string | null
+          duration: string | null
+          included_items: string[] | null
+          itinerary: any[] | null
         }
         Insert: {
           base_price?: number
@@ -289,6 +292,9 @@ export type Database = {
           visible?: boolean | null
           is_season_featured?: boolean | null
           video_url?: string | null
+          duration?: string | null
+          included_items?: string[] | null
+          itinerary?: any[] | null
         }
         Update: {
           base_price?: number
@@ -298,12 +304,13 @@ export type Database = {
           current_bookings?: number | null
           description_en?: string | null
           description_es?: string | null
+          dynamic_pricing?: boolean | null
           id?: string
           image_url?: string | null
           images?: string[] | null
           max_capacity?: number | null
           premium?: boolean | null
-          require_quote?: boolean | null
+          requires_quote?: boolean | null
           season?: string | null
           slug?: string
           title_en?: string | null
@@ -312,6 +319,9 @@ export type Database = {
           visible?: boolean | null
           is_season_featured?: boolean | null
           video_url?: string | null
+          duration?: string | null
+          included_items?: string[] | null
+          itinerary?: any[] | null
         }
         Relationships: []
       }

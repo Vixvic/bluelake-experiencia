@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun, ChevronDown, Copy } from 'lucide-react';
+import { X, Star, Users, Calendar as CalendarIcon, CheckCircle2, Loader2, AlertCircle, FileText, Sun, ChevronDown, Copy, Clock, MapPin } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,9 @@ interface Tour {
   description_en: string;
   image_url: string;
   images?: string[];
+  duration?: string;
+  included_items?: string[];
+  itinerary?: {time: string, activity: string}[];
 }
 
 interface TourDetailModalProps {
@@ -194,15 +197,66 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                     </div>
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  {tour.max_capacity - tour.current_bookings} {i18n.language === 'es' ? 'lugares disponibles' : 'spots available'}
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Users className="w-4 h-4 text-primary" />
+                    {tour.max_capacity - tour.current_bookings} {i18n.language === 'es' ? 'lugares disponibles' : 'spots available'}
+                  </div>
+                  {tour.duration && (
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-accent-orange">
+                      <Clock className="w-4 h-4" />
+                      {tour.duration}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <p className="text-muted-foreground leading-relaxed text-base md:text-lg whitespace-pre-line">
                 {description}
               </p>
+
+              {/* Lo que incluye */}
+              {tour.included_items && tour.included_items.length > 0 && (
+                <div className="pt-4 border-t border-border mt-4">
+                  <h3 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider">{i18n.language === 'es' ? 'Incluye' : 'Includes'}</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {tour.included_items.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-secondary/50 px-3 py-2 rounded-lg border border-border/50 text-sm font-medium text-foreground">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Itinerario (Timeline) */}
+              {tour.itinerary && tour.itinerary.length > 0 && (
+                <div className="pt-6 mt-6 border-t border-border">
+                  <div className="bg-accent-orange/10 rounded-xl p-5 md:p-6 border border-accent-orange/20">
+                    <h3 className="text-xl font-black text-foreground uppercase tracking-wider mb-6 flex items-center gap-2">
+                       <MapPin className="w-5 h-5 text-accent-orange" />
+                       {i18n.language === 'es' ? 'Itinerario' : 'Itinerary'}
+                    </h3>
+                    <div className="relative pl-6 space-y-6 before:absolute before:top-2 before:bottom-2 before:left-[11px] before:w-0.5 before:bg-gradient-to-b before:from-accent-orange/80 before:to-transparent">
+                      {tour.itinerary.map((step, idx) => (
+                        <div key={idx} className="relative flex items-start group">
+                          {/* Timeline dot */}
+                          <div className="absolute -left-6 mt-1.5 w-3 h-3 bg-accent-orange rounded-full shadow-[0_0_0_4px_rgba(255,115,0,0.15)] group-hover:scale-125 group-hover:shadow-[0_0_0_6px_rgba(255,115,0,0.2)] transition-all z-10" />
+                          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 w-full">
+                            <span className="text-sm font-black text-accent-orange shrink-0 min-w-[75px]">
+                              {step.time}
+                            </span>
+                            <span className="text-sm md:text-base font-bold text-foreground leading-snug">
+                              {step.activity}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Galería de imágenes (Max 5) */}
               {tour.images && tour.images.length > 0 && (
