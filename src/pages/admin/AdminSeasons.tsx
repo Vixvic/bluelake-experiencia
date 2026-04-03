@@ -20,14 +20,32 @@ const AdminSeasons: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [savingContent, setSavingContent] = useState(false);
 
+  // Selector state
+  const [tours, setTours] = useState<{ id: string, title_es: string, season: string, is_season_featured: boolean }[]>([]);
+  const [featuredWinterTour, setFeaturedWinterTour] = useState<string>('');
+  const [featuredSummerTour, setFeaturedSummerTour] = useState<string>('');
+  const [savingFeatured, setSavingFeatured] = useState(false);
+
   const autoSeason = (() => {
     const m = new Date().getMonth() + 1;
     return m >= 7 && m <= 11 ? 'summer' : 'winter';
   })();
 
+  const loadTours = async () => {
+    const { data } = await supabase.from('tours').select('id, title_es, season, is_season_featured');
+    if (data) {
+      setTours(data);
+      const winterTour = data.find(t => t.season === 'winter' && t.is_season_featured)?.id || '';
+      const summerTour = data.find(t => t.season === 'summer' && t.is_season_featured)?.id || '';
+      setFeaturedWinterTour(winterTour);
+      setFeaturedSummerTour(summerTour);
+    }
+  };
+
   useEffect(() => {
     supabase.from('seasonal_config').select('*').single().then(({ data }) => setConfig(data));
     siteContentService.getContent().then(data => setSiteContent(data));
+    loadTours();
   }, []);
 
   const save = async (updates: Partial<SeasonConfig>) => {
@@ -40,6 +58,29 @@ const AdminSeasons: React.FC = () => {
     }
     if (error) toast.error('Error al guardar lógica');
     setSaving(false);
+  };
+
+  const saveFeaturedTours = async () => {
+    setSavingFeatured(true);
+    try {
+      // 1. Limpiar todos los featured tours de ambas temporadas
+      await supabase.from('tours').update({ is_season_featured: false }).in('season', ['winter', 'summer']).eq('is_season_featured', true);
+      
+      // 2. Establecer los nuevos (y cambiarles el season asegurando que coincida numéricamente)
+      if (featuredWinterTour) {
+        await supabase.from('tours').update({ is_season_featured: true, season: 'winter' }).eq('id', featuredWinterTour);
+      }
+      if (featuredSummerTour) {
+        await supabase.from('tours').update({ is_season_featured: true, season: 'summer' }).eq('id', featuredSummerTour);
+      }
+      
+      toast.success('Tours Estrella guardados con éxito');
+      loadTours(); // recargar
+    } catch (err: any) {
+      toast.error('Error al guardar tours: ' + err.message);
+    } finally {
+      setSavingFeatured(false);
+    }
   };
 
   const saveContent = async () => {
@@ -126,6 +167,56 @@ const AdminSeasons: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Selección de Tours Destacados */}
+      <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden mt-8">
+        <div className="p-5 border-b border-border flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Tours Destacados (Cinematic Engine)</h2>
+            <p className="text-xs text-muted-foreground mt-1">Elige qué tour se mostrará en pantalla principal durante cada temporada.</p>
+          </div>
+          <button
+            onClick={saveFeaturedTours}
+            disabled={savingFeatured}
+            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
+          >
+            {savingFeatured ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Guardar Tours
+          </button>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-accent-orange" /> Verano Amazónico</label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={featuredSummerTour}
+                onChange={e => setFeaturedSummerTour(e.target.value)}
+              >
+                <option value="">-- Seleccionar Tour Destacado --</option>
+                {tours.map(t => (
+                  <option key={t.id} value={t.id}>{t.title_es}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+               <label className="text-[11px] uppercase font-bold text-muted-foreground mb-1.5 flex items-center gap-1.5"><Snowflake className="w-3.5 h-3.5 text-primary" /> Invierno Amazónico</label>
+               <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={featuredWinterTour}
+                onChange={e => setFeaturedWinterTour(e.target.value)}
+              >
+                <option value="">-- Seleccionar Tour Destacado --</option>
+                {tours.map(t => (
+                  <option key={t.id} value={t.id}>{t.title_es}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Editor de Contenido Web del Motor Estacional */}
       <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden mt-8 animate-in fade-in slide-in-from-bottom-2">
