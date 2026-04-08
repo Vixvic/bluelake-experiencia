@@ -1,29 +1,92 @@
 export const getDynamicTranslation = (text: string, language: string): string => {
-  if (language === 'es') return text;
+  if (language === 'es' || !text) return text;
   
   const translationsEn: Record<string, string> = {
-    // Included Items
-    'Movilidad': 'Transport',
-    'Guía turístico': 'Tour guide',
-    'Ticket de Ingreso': 'Entrance ticket',
-    'Transporte fluvial': 'River transport',
-    'Almuerzo': 'Lunch',
-    'Desayuno': 'Breakfast',
-    'Cena': 'Dinner',
-    'Botiquín de primeros auxilios': 'First aid kit',
-    'Equipos de seguridad': 'Safety equipment',
-    
     // Payment Methods
     'Transferencia': 'Bank Transfer',
     'Tarjeta (+6%)': 'Card (+6%)',
     'Yape': 'Yape',
     'Plin': 'Plin',
-    
-    // Specific Itinerary Items (from screenshot)
-    'Recojo del Hotel y traslado al puerto de Bellavista Nanay': 'Hotel pick-up and transfer to Bellavista Nanay port',
+
+    // Included Items
+    'Movilidad': 'Transport',
+    'Guía turístico': 'Tour guide',
+    'Transporte fluvial': 'River transport',
+    'Tickets de ingreso': 'Entrance tickets',
+    'Ticket de Ingreso': 'Entrance ticket',
+    'Ticket ingreso': 'Entrance ticket',
+    'Almuerzo': 'Lunch',
+    'Recojo y traslado a Hotel': 'Hotel pick-up and transfer',
+    'Tirolesa': 'Zipline',
+    'Playa exclusiva': 'Exclusive beach',
+    'Actividades': 'Activities',
+    'Ski acuático': 'Water skiing',
+    'Paseo en Balsa flotante': 'Floating raft ride',
+    'Kayak': 'Kayak',
+    'Accesorios seguridad': 'Safety accessories',
+    'Desayuno': 'Breakfast',
+    'Cena': 'Dinner',
+    'Botiquín de primeros auxilios': 'First aid kit',
+    'Equipos de seguridad': 'Safety equipment',
+
+    // Itinerary Activities
+    'Recojo del Hotel y traslado al Puerto de Bellavista Nanay': 'Hotel pick-up and transfer to Bellavista Nanay Port',
     'Viaje por el Río Nanay': 'Trip along the Nanay River',
-    'Llegada al Mariposario Pilpintuwasi (metamorfosis de las mariposas, jaguar, aves, monos)': 'Arrival at Pilpintuwasi Butterfly Farm (butterfly metamorphosis, jaguar, birds, monkeys)'
+    'Frontera del río Amazonas y el río Nanay': 'Border of the Amazon River and the Nanay River',
+    'Navegación por el río Amazonas': 'Navigation on the Amazon River',
+    'Visita al árbol gigante Lupuna y mirador de Amazonas en la comunidad Kukama\nVisita al fundo Pedrito\nVisita a la comunidad nativa los Yaguas\nVisita a la isla de los monos y almuerzo a bordo': 'Visit to the giant Lupuna tree and Amazon viewpoint in the Kukama community\nVisit to Pedrito farm\nVisit to the native Yagua community\nVisit to the monkey island and lunch on board',
+    'retorno al Hotel y fin de la experiencia (itinerario puede variar según condiciones climáticas)': 'Return to the Hotel and end of experience (itinerary may vary depending on weather conditions)',
+    'Recojo del Hotel y traslado': 'Hotel pick-up and transfer',
+    'Visita al Centro de Rescate Amazónico y El Bosque Huayo': 'Visit to the Amazon Rescue Center and El Bosque Huayo',
+    'Canopy': 'Canopy',
+    'Llegada al Hotel y fin de la experiencia (Sujeto a variaciones de acuerdo a condiciones climáticas)': 'Arrival at the Hotel and end of the experience (Subject to variations according to weather conditions)',
+    'Recojo en Iquitos, punto de encuentro coordinado con los pasajeros': 'Pick-up in Iquitos, meeting point coordinated with passengers',
+    'Traslado fluvial, navegación por el río Nanay Rumbo a   playas exclusivas': 'River transfer, navigation on the Nanay River towards exclusive beaches',
+    'Arribo en playa exclusiva, cóctel de bienvenida y entrega de pulsera de acceso': 'Arrival at exclusive beach, welcome cocktail and access bracelet delivery',
+    'Actividades recreativas o descanso: caminata ecológica por la orilla, juegos de playa y vóley, fotos en los miradores naturales, música y ambientación tropical': 'Recreational activities or rest: ecological walk along the shore, beach games and volleyball, photos at natural viewpoints, music and tropical ambiance',
+    'Almuerzo amazónico, opciones variadas con ingredientes locales: pescado, pollo, juanes, ensaladas y refrescos naturales': 'Amazonian lunch, varied options with local ingredients: fish, chicken, juanes, salads and natural refreshments',
+    'Tiempo libre para disfrutar de la playa. Relájate en las hamacas, date un chapuzón o participa en dinámicas grupales con el equipo animador': 'Free time to enjoy the beach. Relax in the hammocks, take a dip or participate in group dynamics with the entertainment team',
+    'Sunset experience (opcional): Música en vivo o DJ invitado con cocteles al atardecer, *fechas especiales': 'Sunset experience (optional): Live music or guest DJ with cocktails at sunset, *special dates',
+    'Retorno a la ciudad de Iquitos (itinerario puede variar según condiciones climáticas)': 'Return to the city of Iquitos (itinerary may vary depending on weather conditions)',
+    'Visita al Centro de Rescate Amazónico y el Bosque de Huayo': 'Visit to the Amazon Rescue Center and Huayo Forest',
+    'Salida al Balneario de Santo Tomas': 'Departure to the Santo Tomas Resort',
+    'Instrucciones de Ski Acuático: 15 min. de teoría y 15 min. de practica': 'Water Skiing Instructions: 15 min. of theory and 15 min. of practice',
+    'Llegada al Hotel y fin de la experiencia (retorno sujeto a variaciones dependiendo a cantidad de personas)': 'Arrival at the Hotel and end of the experience (return subject to variations depending on the number of people)',
+    'Recojo del Hotel y traslado al puerto de Bellavista Nanay': 'Hotel pick-up and transfer to Bellavista Nanay port',
+    'Llegada al Mariposario Pilpintuwasi (metamorfosis de las mariposas, jaguar, aves, monos)': 'Arrival at Pilpintuwasi Butterfly Farm (butterfly metamorphosis, jaguar, birds, monkeys)',
+    'Presentación de las costumbres y creencias de la comunidad Kukama (danzas típicas y artesanías)': 'Presentation of the customs and beliefs of the Kukama community (typical dances and crafts)',
+    'Retorno a la ciudad de Iquitos': 'Return to the city of Iquitos',
+    'Almuerzo en el restaurante Ikkitu': 'Lunch at Ikkitu restaurant',
+    'Llegada al Hotel y fin de la experiencia (sujeto a variaciones por condiciones climáticas)': 'Arrival at the Hotel and end of the experience (subject to variations due to weather conditions)',
+    'Recojo del Hotel y traslado al Balneario de Santo Tomas': 'Hotel pick-up and transfer to the Santo Tomas Resort',
+    'Viaje por el río Nanay': 'Trip along the Nanay River',
+    'Bienvenida a bordo de una Balsa Flotante': 'Welcome aboard a Floating Raft',
+    'Pesca artesanal en lago Mapacocha': 'Artisanal fishing in Mapacocha Lake',
+    'Almuerzo regional': 'Regional lunch',
+    'Actividades acuáticas de recreación para disfrutar de la laguna y el paisaje amazónico, kayak y nadar en la laguna': 'Recreational water activities to enjoy the lagoon and the Amazon landscape, kayaking and swimming in the lagoon',
+    'Retorno al Hotel y fin de la experiencia (itinerario puede variar de acuerdo a las condiciones climáticas)': 'Return to the Hotel and end of the experience (itinerary may vary according to weather conditions)',
+    'Recojo en Iquitos, punto de encuentro coordinado con los pasajeros y traslado al Centro de Rescate "Amazon Forever Biopark"': 'Pick-up in Iquitos, meeting point coordinated with passengers and transfer to the "Amazon Forever Biopark" Rescue Center',
+    'Primera para en el Centro de Rescate (CREA): Avistamiento de monos, osos perezosos, tortugas y los emblemáticos manatíes': 'First stop at the Rescue Center (CREA): Sightings of monkeys, sloths, turtles and the emblematic manatees',
+    'Segunda parada en el Bosque de Huayo: Senderos en el Bosque de Huayo, visita guiada con enfoque educativo': 'Second stop at Huayo Forest: Trails in the Huayo Forest, guided tour with an educational focus',
+    'Traslado terrestre hasta el puerto Camelias': 'Land transfer to Camelias port',
+    'Traslado fluvial, navegación por el rio Nanay rumbo a una de las playas mas exclusivas de Iquitos': 'River transfer, navigation on the Nanay River towards one of the most exclusive beaches in Iquitos',
+    'Almuerzo Amazónico, opciones variadas con ingredientes locales, pescado, pollo, juanes, ensaladas y refrescos naturales': 'Amazonian lunch, varied options with local ingredients, fish, chicken, juanes, salads and natural refreshments',
+    'Tiempo libre para disfrutar de la playa\nRelájate en las hamacas, date un chapuzón o participa en dinámicas grupales con el equipo animador': 'Free time to enjoy the beach\nRelax in the hammocks, take a dip or participate in group dynamics with the entertainment team',
+    'Sunset Experience (opcional), música en vivo o DJ invitado con cocteles': 'Sunset Experience (optional), live music or guest DJ with cocktails',
+    'Punto de encuentro y recojo': 'Meeting point and pick-up',
+    'Llegada al Puerto Nanay, fotos y dinámica local': 'Arrival at Puerto Nanay, photos and local dynamic',
+    'Embarque en bote típico, charla breve de seguridad y entrega de chalecos salvavidas': 'Boarding a typical boat, short safety talk and delivery of life jackets',
+    'Navegación por río Momón, trapiche amazónico. Paseo escénico por el Momón y vista del trapiche (producción artesanal)': 'Navigation on the Momón River, Amazonian trapiche. Scenic ride along the Momón and view of the trapiche (artisanal production)',
+    'Acuario Amazónico (Pirañas y peces de la Amazonía).  Visita guiada para ver especies como pirañas, anguila eléctrica y más.': 'Amazon Aquarium (Piranhas and fish of the Amazon). Guided tour to see species like piranhas, electric eels and more.',
+    'Visita a la comunidad nativa Boras, presentación cultural, danzas, historia y artesanías': 'Visit to the native Bora community, cultural presentation, dances, history and crafts',
+    'Visita al Serpentario, explicación y contacto controlado con fauna (según disponibilidad): anacondas, tortugas': 'Visit to the Serpentarium, explanation and controlled contact with fauna (subject to availability): anacondas, turtles',
+    'Visita al Insectario: Mariposas e insectos amazónicos (opcional: interacción guiada, por ejemplo tarántula)': 'Visit to the Insectarium: Butterflies and Amazonian insects (optional: guided interaction, for example tarantulas)',
+    'Rumbo al cruce del Nanay con el Amazonas. Navegación hacia el punto de unión Nanay y Amazonas': 'Heading to the crossing of the Nanay edge with the Amazon. Navigation towards the union point of Nanay and Amazon',
+    'Almuerzo en balsa restaurante': 'Lunch in a floating restaurant',
+    'Regreso en bote al puerto y traslado de retorno a la ciudad': 'Return by boat to the port and transfer back to the city',
+    'Termino de la experiencia': 'End of the experience'
   };
 
-  return translationsEn[text] || text;
+  // Check if there is an exact match for the trimmed string.
+  return translationsEn[text.trim()] || text;
 };
