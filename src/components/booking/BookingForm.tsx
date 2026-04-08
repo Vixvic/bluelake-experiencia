@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { BookingTour, BookingFormData, CARD_FEE_RATE } from '@/utils/whatsapp-helper';
 import { useBooking } from '@/hooks/useBooking';
+import { getDynamicTranslation } from '@/utils/dynamicTranslations';
 
 interface BookingFormProps {
     tour: BookingTour;
@@ -228,7 +229,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                             <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${watchAll.payment_method === value ? 'border-primary' : 'border-muted-foreground'}`}>
                                 {watchAll.payment_method === value && <div className="w-2 h-2 rounded-full bg-primary" />}
                             </div>
-                            <span className="text-sm font-medium">{label}</span>
+                            <span className="text-sm font-medium">{getDynamicTranslation(label, i18n.language)}</span>
                         </label>
                     ))}
                 </div>

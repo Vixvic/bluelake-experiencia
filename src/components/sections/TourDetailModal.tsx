@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useBooking } from '@/hooks/useBooking';
+import { getDynamicTranslation } from '@/utils/dynamicTranslations';
 
 interface Tour {
   id: string;
@@ -223,7 +224,7 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                     {tour.included_items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 bg-secondary/50 px-3 py-2 rounded-lg border border-border/50 text-sm font-medium text-foreground">
                         <CheckCircle2 className="w-4 h-4 text-primary" />
-                        {item}
+                        {getDynamicTranslation(item, i18n.language)}
                       </div>
                     ))}
                   </div>
@@ -248,7 +249,7 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                               {step.time}
                             </span>
                             <span className="text-sm md:text-base font-bold text-foreground leading-snug">
-                              {step.activity}
+                              {getDynamicTranslation(step.activity, i18n.language)}
                             </span>
                           </div>
                         </div>
@@ -462,7 +463,7 @@ const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
                         <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center shrink-0 ${watch('payment_method') === value ? 'border-primary' : 'border-muted-foreground'}`}>
                           {watch('payment_method') === value && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
                         </div>
-                        <span className="font-medium">{label}</span>
+                        <span className="font-medium">{getDynamicTranslation(label, i18n.language)}</span>
                       </label>
                     ))}
                   </div>
