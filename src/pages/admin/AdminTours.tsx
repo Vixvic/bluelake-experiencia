@@ -184,6 +184,17 @@ const AdminTours: React.FC = () => {
     setIsAddingNewCategory(false);
   };
 
+  const handleCloseModal = () => {
+    if (!editingTour) return;
+    const hasData = !!(editingTour.title_es || editingTour.title_en || editingTour.description_es || editingTour.image_url);
+    if (hasData) {
+      const confirmed = window.confirm('¿Estás seguro de cerrar? Los datos no guardados se perderán.');
+      if (!confirmed) return;
+    }
+    setEditingTour(null);
+    setIsNewTour(false);
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = e.target.files?.[0];
@@ -579,11 +590,11 @@ const AdminTours: React.FC = () => {
       )}
 
       {editingTour && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setEditingTour(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-card w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-border flex justify-between items-center">
               <h2 className="text-xl font-bold text-foreground">{isNewTour ? 'Crear Nuevo Tour' : 'Editar Tour'}</h2>
-              <button type="button" onClick={() => setEditingTour(null)} className="p-2 hover:bg-secondary rounded-full">
+              <button type="button" onClick={handleCloseModal} className="p-2 hover:bg-secondary rounded-full">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -897,7 +908,7 @@ const AdminTours: React.FC = () => {
               </div>
 
               <div className="pt-4 flex justify-end gap-3 mt-4 border-t border-border">
-                <button type="button" onClick={() => setEditingTour(null)} className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-secondary transition">
+                <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium hover:bg-secondary transition">
                   Cancelar
                 </button>
                 <button type="submit" disabled={isSaving} className="px-4 py-2 rounded-xl text-sm font-medium bg-primary text-primary-foreground flex items-center gap-2 hover:bg-primary/90 transition">

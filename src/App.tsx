@@ -23,6 +23,7 @@ import UpdatePassword from "./pages/shared/UpdatePassword";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientProfile from "./pages/client/ClientProfile";
 import ItineraryVoucher from "./pages/client/ItineraryVoucher";
+import ConsolidatedVoucher from "./pages/client/ConsolidatedVoucher";
 import { ReturnToAdminBanner } from "@/components/shared/ReturnToAdminBanner";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
                 <Route path="/client/dashboard" element={<ProtectedClient><ClientDashboard /></ProtectedClient>} />
                 <Route path="/client/profile" element={<ProtectedClient><ClientProfile /></ProtectedClient>} />
                 <Route path="/client/itinerary/:id" element={<ItineraryVoucher />} />
+                <Route path="/client/voucher-consolidado" element={<ProtectedClient><ConsolidatedVoucher /></ProtectedClient>} />
 
                 {/* Admin */}
                 <Route path="/admin" element={

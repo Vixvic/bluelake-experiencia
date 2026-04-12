@@ -303,6 +303,27 @@ const ClientDashboard: React.FC = () => {
                     </div>
                 )}
 
+                {/* Voucher Consolidado - Visible cuando hay 2+ reservas activas futuras */}
+                {(() => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const activeCount = bookings.filter(b =>
+                        ['pending', 'confirmed'].includes(b.status) &&
+                        (b.dates || []).some(d => new Date(d + 'T00:00:00') >= today)
+                    ).length;
+                    if (activeCount < 2) return null;
+                    return (
+                        <div className="mt-6 mb-2">
+                            <Link
+                                to="/client/voucher-consolidado"
+                                className="flex items-center justify-center gap-2.5 w-full py-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold rounded-xl transition-all hover:scale-[1.01] text-base shadow-md"
+                            >
+                                📄 Ver mi Voucher General ({activeCount} experiencias)
+                            </Link>
+                        </div>
+                    );
+                })()}
+
                 {/* Quick actions */}
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Link

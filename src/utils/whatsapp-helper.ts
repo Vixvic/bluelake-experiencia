@@ -28,6 +28,20 @@ export interface BookingFormData {
     notes?: string;
 }
 
+export interface PendingBookingSummary {
+    id: string;
+    dates: string[];
+    adults: number;
+    children: number;
+    total_amount: number;
+    payment_method: string;
+    payment_mode: string;
+    status: string;
+    title_es: string;
+    title_en?: string;
+    category?: string;
+}
+
 export const BLUELAKE_WP = '51996130193'; // sin + ni espacios
 
 /** Recargo aplicado al monto cuando el cliente elige pago con tarjeta */
@@ -91,5 +105,69 @@ export function buildWhatsAppMessage(
         accessMessage + `\n` +
         `━━━━━━━━━━━━━━━━━━━\n` +
         `Responde este mensaje enviando tu comprobante de pago para confirmar tu reserva. ¡Gracias! 🙏`
+    );
+}
+
+/**
+ * Genera un mensaje WhatsApp consolidado cuando el cliente tiene múltiples reservas activas.
+ */
+export function buildConsolidatedWhatsAppMessage(
+    customerName: string,
+    customerEmail: string,
+    bookings: PendingBookingSummary[],
+    isRecurring: boolean,
+    clientPassword: string | null
+): string {
+    const portalUrl = `https://vixvic.github.io/bluelake-experiencia/login`;
+    const methodLabels: Record<string, string> = {
+        transfer: 'Transferencia bancaria',
+        yape: 'Yape',
+        plin: 'Plin',
+        card: 'Tarjeta (+6%)',
+    };
+
+    let bookingLines = '';
+    let grandTotal = 0;
+
+    bookings.forEach((b, i) => {
+        const dateList = (b.dates || []).map(d => {
+            try {
+                return format(new Date(d + 'T00:00:00'), 'dd/MM/yyyy', { locale: es });
+            } catch {
+                return d;
+            }
+        }).join(', ');
+        grandTotal += b.total_amount || 0;
+
+        bookingLines += `\n📌 *RESERVA ${i + 1}:* ${b.title_es}\n` +
+            `   📅 ${dateList} | 👥 ${b.adults} adulto(s)${b.children > 0 ? ` + ${b.children} niño(s)` : ''} | 💰 S/ ${(b.total_amount || 0).toFixed(2)}\n`;
+    });
+
+    let accessMessage = '';
+    if (isRecurring) {
+        accessMessage = `🔐 *ACCESO A TU PANEL*\n` +
+                        `🌐 ${portalUrl}\n` +
+                        `Ingresa con tu correo (${customerEmail}) y tu contraseña habitual.`;
+    } else {
+        accessMessage = `🔐 *ACCESO A TU PANEL*\n` +
+                        `🌐 ${portalUrl}\n` +
+                        `📧 Usuario: ${customerEmail}\n` +
+                        `🔑 Contraseña temporal: ${clientPassword}\n` +
+                        `*(Te recomendamos cambiarla al ingresar por primera vez)*`;
+    }
+
+    return encodeURIComponent(
+        `🌿 *RESERVAS BLUELAKE EXPERIENCIA* 🌿\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `👤 *Cliente:* ${customerName}\n` +
+        `📧 *Email:* ${customerEmail}\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        bookingLines +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `💰 *TOTAL GENERAL:* S/ ${grandTotal.toFixed(2)}\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        accessMessage + `\n` +
+        `━━━━━━━━━━━━━━━━━━━\n` +
+        `Responde este mensaje enviando tu(s) comprobante(s) de pago para confirmar tus reservas. ¡Gracias! 🙏`
     );
 }

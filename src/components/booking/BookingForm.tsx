@@ -47,7 +47,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
 
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
     
-    const { submitBooking, submitted, submitError, whatsAppUrl, isRecurring, tempPassword, customerEmail } = useBooking();
+    const { submitBooking, submitted, submitError, whatsAppUrl, isRecurring, hasActiveSession, tempPassword, customerEmail, previousBookings } = useBooking();
 
     const isSoldOut = tour.current_bookings >= tour.max_capacity;
     const availableCapacity = Math.max(0, tour.max_capacity - tour.current_bookings);
@@ -99,7 +99,9 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                 <div>
                     <h3 className="text-xl font-bold text-foreground mb-1">¡Reserva registrada!</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        Tu solicitud fue guardada. Ahora envíanos este mensaje a WhatsApp para confirmar tu pago y recibir las instrucciones.
+                        {previousBookings.length > 1
+                            ? `Tienes ${previousBookings.length} reservas activas. Envía este mensaje consolidado a WhatsApp para confirmar tus pagos.`
+                            : 'Tu solicitud fue guardada. Ahora envíanos este mensaje a WhatsApp para confirmar tu pago y recibir las instrucciones.'}
                     </p>
                 </div>
 
@@ -110,19 +112,63 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                     className="flex items-center justify-center gap-2.5 w-full py-4 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold rounded-xl transition-all hover:scale-[1.02] text-base"
                 >
                     <MessageCircle className="w-5 h-5" />
-                    Enviar confirmación por WhatsApp
+                    {previousBookings.length > 1
+                        ? `Enviar ${previousBookings.length} reservas por WhatsApp`
+                        : 'Enviar confirmación por WhatsApp'}
                 </a>
+
+                {/* Información de reservas previas */}
+                {previousBookings.length > 1 && (
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-left space-y-2">
+                        <p className="text-xs font-semibold text-primary flex items-center gap-1.5">
+                            📋 Tus reservas activas ({previousBookings.length})
+                        </p>
+                        <div className="space-y-1.5">
+                            {previousBookings.map((b, i) => (
+                                <div key={b.id || i} className="flex justify-between items-center text-xs bg-background rounded-lg px-3 py-2 border border-border">
+                                    <span className="font-medium text-foreground truncate flex-1">{b.title_es}</span>
+                                    <span className="text-primary font-bold ml-2 whitespace-nowrap">S/ {(b.total_amount || 0).toFixed(2)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="rounded-xl border border-border bg-secondary/30 p-4 text-left space-y-1.5">
                     <div className="flex items-center gap-2 mb-2">
                         <Lock className="w-4 h-4 text-primary" />
                         <span className="text-sm font-semibold text-foreground">Tu acceso al Portal de Cliente</span>
                     </div>
-                    {isRecurring ? (
-                        <p className="text-xs text-muted-foreground">
-                            Hemos vinculado esta reserva a tu cuenta existente. Ingresa al panel de cliente con tu contraseña habitual.
-                        </p>
-                    ) : (
+
+                    {/* Escenario 1: Usuario recurrente CON sesión activa */}
+                    {isRecurring && hasActiveSession && (
+                        <div className="space-y-2">
+                            <div className="bg-jungle/10 rounded-lg p-2.5 border border-jungle/20">
+                                <p className="text-xs text-jungle font-semibold flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    Reserva vinculada a tu cuenta ✓
+                                </p>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Tu nueva reserva ya está vinculada a tu cuenta activa. Puedes verla directamente en tu dashboard.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Escenario 2: Usuario recurrente SIN sesión activa */}
+                    {isRecurring && !hasActiveSession && (
+                        <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">
+                                Ya tienes una cuenta registrada con este correo. Inicia sesión para ver todas tus reservas y descargar vouchers.
+                            </p>
+                            <p className="text-xs text-amber-600 font-medium">
+                                💡 Si olvidaste tu contraseña, usa la opción de recuperar contraseña en la página de login.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Escenario 3: Usuario nuevo */}
+                    {!isRecurring && (
                         <div className="space-y-2">
                             <p className="text-xs text-muted-foreground">Hemos creado tu cuenta. Usa estas credenciales para ingresar:</p>
                             <div className="bg-background rounded-lg p-2.5 border border-border space-y-1.5">
@@ -138,11 +184,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ tour }) => {
                             </div>
                         </div>
                     )}
+
                     <a
                         href="/bluelake-experiencia/login"
                         className="text-xs text-primary hover:underline font-semibold block mt-2"
                     >
-                        → Ir al Portal de Cliente
+                        {hasActiveSession ? '→ Ir a mi Dashboard' : '→ Ir al Portal de Cliente'}
                     </a>
                 </div>
             </div>
