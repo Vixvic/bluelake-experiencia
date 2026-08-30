@@ -46,7 +46,7 @@ interface TourDetailModalProps {
 
 import { BookingFormData, CARD_FEE_RATE } from '@/utils/whatsapp-helper';
 
-const bookingSchema: z.ZodType<BookingFormData> = z.object({
+const bookingSchema = z.object({
   customer_name: z.string().min(2, 'Nombre requerido'),
   customer_email: z.string().email('Email inválido'),
   customer_phone: z.string().min(6, 'Teléfono requerido'),
