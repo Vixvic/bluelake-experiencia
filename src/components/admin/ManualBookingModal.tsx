@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 interface Tour {
     id: string;
     title_es: string;
-    price: number | null;
+    base_price: number | null;
+    child_price: number | null;
 }
 
 interface ManualBookingModalProps {
@@ -41,7 +42,7 @@ const ManualBookingModal: React.FC<ManualBookingModalProps> = ({ isOpen, onClose
 
     useEffect(() => {
         if (isOpen) {
-            supabase.from('tours').select('id, title_es, price').eq('is_active', true).then(({ data }) => {
+            supabase.from('tours').select('id, title_es, base_price, child_price').eq('visible', true).then(({ data }) => {
                 if (data) setTours(data);
             });
         }
@@ -51,8 +52,9 @@ const ManualBookingModal: React.FC<ManualBookingModalProps> = ({ isOpen, onClose
     useEffect(() => {
         if (!formData.tour_id) return;
         const selectedTour = tours.find(t => t.id === formData.tour_id);
-        if (selectedTour?.price) {
-            const calculated = (formData.adults * selectedTour.price) + (formData.children * (selectedTour.price * 0.7));
+        if (selectedTour?.base_price) {
+            const childPrice = selectedTour.child_price ?? selectedTour.base_price * 0.7;
+            const calculated = (formData.adults * selectedTour.base_price) + (formData.children * childPrice);
             setFormData(prev => ({ ...prev, total_amount: Number(calculated.toFixed(2)) }));
         }
     }, [formData.tour_id, formData.adults, formData.children, tours]);
