@@ -44,21 +44,20 @@ interface TourDetailModalProps {
   onClose: () => void;
 }
 
-const bookingSchema = z.object({
+import { BookingFormData, CARD_FEE_RATE } from '@/utils/whatsapp-helper';
+
+const bookingSchema: z.ZodType<BookingFormData> = z.object({
   customer_name: z.string().min(2, 'Nombre requerido'),
   customer_email: z.string().email('Email inválido'),
   customer_phone: z.string().min(6, 'Teléfono requerido'),
-  adults: z.coerce.number().min(1).max(20),
-  children: z.coerce.number().min(0).max(20),
   document_type: z.enum(['DNI', 'CE', 'Pasaporte']),
   document_number: z.string().min(5, 'Documento inválido'),
+  adults: z.coerce.number().min(1).max(20),
+  children: z.coerce.number().min(0).max(20),
   payment_method: z.enum(['transfer', 'yape', 'plin', 'card']),
   payment_mode: z.enum(['full', 'partial']),
   notes: z.string().optional(),
 });
-
-type BookingFormData = z.infer<typeof bookingSchema>;
-import { CARD_FEE_RATE } from '@/utils/whatsapp-helper';
 
 const TourDetailModal: React.FC<TourDetailModalProps> = ({ tour, onClose }) => {
   const { t, i18n } = useTranslation();
