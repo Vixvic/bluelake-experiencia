@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 interface Tour {
     id: string;
     title_es: string;
-    price: number | null;
+    base_price: number | null;
+    child_price: number | null;
 }
 
 interface ManualBookingModalProps {
