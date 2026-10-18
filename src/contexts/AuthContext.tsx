@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Solo volvemos a bloquear la UI y pedir permisos si es un LOGIN limpio explícito.
         // Ignoramos eventos como 'TOKEN_REFRESHED' que ocurren al cambiar el foco de la ventana.
-        if (_event === 'SIGNED_IN') {
+        if (_event === 'SIGNED_IN' || _event === 'PASSWORD_RECOVERY') {
           setLoading(true);
           setTimeout(async () => {
             if (sess?.user) await fetchUserFlags(sess.user.id);

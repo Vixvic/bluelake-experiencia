@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
 import logo from '@/assets/logo-bluelake.png';
 
 const UpdatePassword: React.FC = () => {
-    const navigate = useNavigate();
-    const { user, requiresPasswordChange, loading: authLoading } = useAuth();
+    const { user, isAdmin, loading: authLoading } = useAuth();
     const { toast } = useToast();
     
     const [password, setPassword] = useState('');
@@ -27,11 +26,6 @@ const UpdatePassword: React.FC = () => {
 
     if (!user) {
         return <Navigate to="/login" replace />;
-    }
-
-    if (!requiresPasswordChange && !loading) {
-         // Si por error entró acá y no necesita cambiar clave, mandarlo al inicio.
-         return <Navigate to="/" replace />;
     }
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -57,7 +51,8 @@ const UpdatePassword: React.FC = () => {
 
         setLoading(true);
 
-        // 1. Actualizar contraseña en Auth
+        try {
+        // Actualizar mediante el servicio de autenticación, nunca mediante SQL.
         const { error: updateError } = await supabase.auth.updateUser({ password });
 
         if (updateError) {
@@ -73,12 +68,12 @@ const UpdatePassword: React.FC = () => {
         // 2. Apagar la bandera en la tabla profiles
         const { error: dbError } = await supabase
             .from('profiles')
-            .update({ requires_password_change: false } as any)
+            .update({ requires_password_change: false })
             .eq('id', user.id);
 
         if (dbError) {
-             console.error("Error quitando el flag:", dbError);
-             // No interrumpimos la UX si falla el flag, pero lo ideal es documentarlo
+              toast({ variant: "destructive", title: "Contraseña actualizada", description: "No pudimos completar la actualización de tu perfil. Vuelve a iniciar sesión con tu nueva contraseña." });
+              return;
         }
         
         // Finalizamos
@@ -88,11 +83,12 @@ const UpdatePassword: React.FC = () => {
             description: "Tu contraseña ha sido actualizada por seguridad.",
         });
 
-        // 3. Redirigir al panel final y refrescar estado local (en la vida real AuthContext tomará unos ms en refrescar)
-        // Usamos un reload suave o navigate a una vista que revalide.
-        // Simularemos mandarlo al dashboard, o forzar una actualización del contexto si fuera posible.
-        // Dado que el componente no puede forzar mutate de Supabase, lo mejor es redirigir y que cargue de nuevo
-        window.location.href = '/bluelake-experiencia/client/dashboard';
+        window.location.assign(`${import.meta.env.BASE_URL}${isAdmin ? 'admin' : 'client/dashboard'}`);
+        } catch {
+            toast({ variant: "destructive", title: "No se pudo completar el cambio", description: "Comprueba tu conexión e inténtalo nuevamente." });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -107,20 +103,22 @@ const UpdatePassword: React.FC = () => {
                             className="h-16 w-auto object-contain"
                         />
                     </div>
-                    <h1 className="text-2xl font-bold text-white">
-                        Actualiza tu Seguridad
+                    <h1 className="text-2xl font-bold text-primary-foreground">
+                        Cambiar contraseña
                     </h1>
-                    <p className="text-white/70 text-sm mt-2">
-                        Como usaste una contraseña temporal enviada por WhatsApp, te pedimos que la cambies por una propia antes de continuar.
+                    <p className="text-primary-foreground/70 text-sm mt-2">
+                        Establece una nueva contraseña para tu cuenta Bluelake.
                     </p>
                 </div>
 
-                <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="bg-card rounded-2xl p-8 shadow-lg">
                     <form onSubmit={handleUpdate} className="space-y-4">
                         <div>
-                            <label className="text-sm font-semibold text-foreground mb-1.5 block">Nueva Contraseña</label>
+                            <label htmlFor="new-password" className="text-sm font-semibold text-foreground mb-1.5 block">Nueva Contraseña</label>
                             <div className="relative">
                                 <Input
+                                    id="new-password"
+                                    autoComplete="new-password"
                                     type={showPass ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -130,19 +128,24 @@ const UpdatePassword: React.FC = () => {
                                     className="pr-10"
                                     disabled={loading}
                                 />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                                     onClick={() => setShowPass(!showPass)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 >
                                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
                         <div>
-                            <label className="text-sm font-semibold text-foreground mb-1.5 block">Confirmar Contraseña</label>
+                            <label htmlFor="confirm-password" className="text-sm font-semibold text-foreground mb-1.5 block">Confirmar Contraseña</label>
                             <Input
+                                id="confirm-password"
+                                autoComplete="new-password"
                                 type={showPass ? 'text' : 'password'}
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
