@@ -107,7 +107,18 @@ const AdminTours: React.FC = () => {
   const fetchTours = () => {
     supabase.from('tours').select('id,slug,title_es,title_en,description_es,description_en,category,season,base_price,max_capacity,premium,visible,current_bookings,image_url,images,is_season_featured,video_url,duration,included_items,itinerary')
       .order('created_at', { ascending: false })
-      .then(({ data }) => { setTours(data || []); setLoading(false); });
+      .then(({ data }) => {
+        setTours((data || []).map(tour => ({
+          ...tour,
+          included_items: Array.isArray(tour.included_items)
+            ? tour.included_items.filter((item): item is string => typeof item === 'string') : [],
+          itinerary: Array.isArray(tour.itinerary)
+            ? tour.itinerary.filter((item): item is { time: string; activity: string } =>
+              typeof item === 'object' && item !== null && !Array.isArray(item)
+              && typeof item.time === 'string' && typeof item.activity === 'string') : [],
+        })));
+        setLoading(false);
+      });
   };
 
   useEffect(() => { fetchTours(); }, []);
